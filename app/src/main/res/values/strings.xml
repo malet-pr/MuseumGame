@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">MuseumGame</string>
+    <string name="museum_hall_title">Museum Hall</string>
+    <string name="museum_hall_description">A quiet museum hall lined with unusual exhibits.</string>
+    <string name="open_exhibit">Open %1$s</string>
+    <string name="reappearing_pen_name">The Reappearing Pen</string>
+    <string name="reappearing_pen_image_description">A pen displayed in a museum case.</string>
+    <string name="initial_museum_message">One exhibit does not belong. Inspect the museum.</string>
+    <string name="reappearing_pen_description">The pen vanishes from its case, then quietly reappears. You found the anomaly!</string>
+    <string name="inspections">Inspections: %1$d</string>
+    <string name="inspect_exhibit">Inspect exhibit</string>
+    <string name="room_solved">You solved the room in %1$d inspections.</string>
+    <string name="restart">Restart</string>
+    <string name="return_to_hall">Back to museum hall</string>
 </resources>

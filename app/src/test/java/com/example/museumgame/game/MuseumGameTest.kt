@@ -9,12 +9,14 @@ import org.junit.Test
 class MuseumGameTest {
 
     private val vase = Exhibit(
+        id = "ancient_vase",
         name = "Ancient vase",
         description = "Nothing suspicious.",
         isAnomaly = false
     )
 
     private val portrait = Exhibit(
+        id = "portrait",
         name = "Portrait",
         description = "The portrait blinked.",
         isAnomaly = true

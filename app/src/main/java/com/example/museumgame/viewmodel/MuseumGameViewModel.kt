@@ -1,59 +1,79 @@
 package com.example.museumgame.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.museumgame.game.MuseumGame
 import com.example.museumgame.model.Exhibit
 
+sealed interface MuseumDestination {
+    data object Hall : MuseumDestination
+    data class ExhibitDetail(val exhibit: Exhibit) : MuseumDestination
+}
+
+data class MuseumUiState(
+    val destination: MuseumDestination = MuseumDestination.Hall,
+    val exhibits: List<Exhibit>,
+    val message: String,
+    val attempts: Int = 0,
+    val solved: Boolean = false
+)
+
 class MuseumGameViewModel : ViewModel() {
 
-    val exhibits = listOf(
+    private val exhibits = listOf(
         Exhibit(
-            name = "Ancient vase",
-            description = "An ordinary ancient vase. Nothing suspicious.",
-            isAnomaly = false
-        ),
-        Exhibit(
-            name = "Portrait",
-            description = "The portrait just blinked. You found the anomaly!",
+            id = REAPPEARING_PEN_ID,
+            name = "The Reappearing Pen",
+            description = "The pen vanishes from its case, then quietly reappears. You found the anomaly!",
             isAnomaly = true
-        ),
-        Exhibit(
-            name = "Roman coin",
-            description = "A perfectly normal Roman coin.",
-            isAnomaly = false
         )
     )
 
     private val game = MuseumGame(exhibits)
 
-    var message by mutableStateOf(INITIAL_MESSAGE)
+    var uiState by mutableStateOf(
+        MuseumUiState(
+            exhibits = exhibits,
+            message = INITIAL_MESSAGE
+        )
+    )
         private set
 
-    var attempts by mutableIntStateOf(0)
-        private set
+    fun openExhibit(exhibit: Exhibit) {
+        if (exhibit in exhibits) {
+            uiState = uiState.copy(
+                destination = MuseumDestination.ExhibitDetail(exhibit)
+            )
+        }
+    }
 
-    var solved by mutableStateOf(false)
-        private set
+    fun returnToHall() {
+        uiState = uiState.copy(destination = MuseumDestination.Hall)
+    }
 
     fun inspect(exhibit: Exhibit) {
-        message = game.inspect(exhibit)
-        attempts = game.attempts
-        solved = game.solved
+        uiState = uiState.copy(
+            message = game.inspect(exhibit),
+            attempts = game.attempts,
+            solved = game.solved
+        )
     }
 
     fun restart() {
         game.restart()
 
-        message = INITIAL_MESSAGE
-        attempts = game.attempts
-        solved = game.solved
+        uiState = uiState.copy(
+            message = INITIAL_MESSAGE,
+            attempts = game.attempts,
+            solved = game.solved
+        )
     }
 
     companion object {
+        const val REAPPEARING_PEN_ID = "reappearing_pen"
+
         private const val INITIAL_MESSAGE =
             "One exhibit does not belong. Inspect the museum."
     }
