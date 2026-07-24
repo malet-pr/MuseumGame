@@ -9,6 +9,7 @@ import com.example.museumgame.game.PenInspectionFeedback
 import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.ReappearingPenState
 import com.example.museumgame.model.Exhibit
+import com.example.museumgame.model.ExhibitIds
 
 sealed interface MuseumDestination {
     data object Hall : MuseumDestination
@@ -18,7 +19,6 @@ sealed interface MuseumDestination {
 data class MuseumUiState(
     val destination: MuseumDestination = MuseumDestination.Hall,
     val exhibits: List<Exhibit>,
-    val message: String,
     val attempts: Int = 0,
     val solved: Boolean = false,
     val reappearingPenState: ReappearingPenState = ReappearingPenState(),
@@ -29,7 +29,7 @@ class MuseumGameViewModel : ViewModel() {
 
     private val exhibits = listOf(
         Exhibit(
-            id = REAPPEARING_PEN_ID,
+            id = ExhibitIds.REAPPEARING_PEN,
             name = "The Reappearing Pen",
             description = "The pen vanishes from its case, then quietly reappears. You found the anomaly!",
             isAnomaly = true
@@ -40,8 +40,7 @@ class MuseumGameViewModel : ViewModel() {
 
     var uiState by mutableStateOf(
         MuseumUiState(
-            exhibits = exhibits,
-            message = INITIAL_MESSAGE
+            exhibits = exhibits
         )
     )
         private set
@@ -58,14 +57,6 @@ class MuseumGameViewModel : ViewModel() {
         uiState = uiState.copy(destination = MuseumDestination.Hall)
     }
 
-    fun inspect(exhibit: Exhibit) {
-        uiState = uiState.copy(
-            message = game.inspect(exhibit),
-            attempts = game.attempts,
-            solved = game.solved
-        )
-    }
-
     fun inspectReappearingPen(location: PenLocation) {
         val result = game.inspectReappearingPen(location)
         uiState = uiState.copy(
@@ -80,18 +71,10 @@ class MuseumGameViewModel : ViewModel() {
         game.restart()
 
         uiState = uiState.copy(
-            message = INITIAL_MESSAGE,
             attempts = game.attempts,
             solved = game.solved,
             reappearingPenState = game.reappearingPenState,
             penFeedback = null
         )
-    }
-
-    companion object {
-        const val REAPPEARING_PEN_ID = "reappearing_pen"
-
-        private const val INITIAL_MESSAGE =
-            "One exhibit does not belong. Inspect the museum."
     }
 }

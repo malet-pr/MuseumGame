@@ -19,12 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.museumgame.R
 import com.example.museumgame.model.Exhibit
+import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.ui.theme.MuseumGameTheme
-import com.example.museumgame.viewmodel.MuseumGameViewModel
 
 @Composable
 fun MuseumHallContent(
@@ -62,7 +64,10 @@ fun MuseumHallContent(
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(stringResource(R.string.museum_hall_title))
+                Text(
+                    stringResource(R.string.museum_hall_title),
+                    modifier = Modifier.semantics { heading() }
+                )
                 HallIllustration(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -94,7 +99,10 @@ private fun HallActions(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(stringResource(R.string.museum_hall_title))
+        Text(
+            stringResource(R.string.museum_hall_title),
+            modifier = Modifier.semantics { heading() }
+        )
         HallExhibitButtons(exhibits, onOpenExhibit)
     }
 }
@@ -117,7 +125,7 @@ private fun HallExhibitButtons(
 }
 
 private val previewPen = Exhibit(
-    id = MuseumGameViewModel.REAPPEARING_PEN_ID,
+    id = ExhibitIds.REAPPEARING_PEN,
     name = "The Reappearing Pen",
     description = "The pen reappeared.",
     isAnomaly = true

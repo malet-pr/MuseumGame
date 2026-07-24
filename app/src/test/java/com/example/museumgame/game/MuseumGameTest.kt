@@ -1,6 +1,7 @@
 package com.example.museumgame.game
 
 import com.example.museumgame.model.Exhibit
+import com.example.museumgame.model.ExhibitIds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -19,6 +20,13 @@ class MuseumGameTest {
         id = "portrait",
         name = "Portrait",
         description = "The portrait blinked.",
+        isAnomaly = true
+    )
+
+    private val reappearingPen = Exhibit(
+        id = ExhibitIds.REAPPEARING_PEN,
+        name = "The Reappearing Pen",
+        description = "The pen reappeared.",
         isAnomaly = true
     )
 
@@ -67,7 +75,7 @@ class MuseumGameTest {
 
     @Test
     fun penInspectionChoicesIncrementAttemptsAndSolveOnReturnToTarget() {
-        val game = MuseumGame(listOf(vase, portrait))
+        val game = MuseumGame(listOf(reappearingPen))
 
         game.inspectReappearingPen(PenLocation.PAPERS)
         game.inspectReappearingPen(PenLocation.EMPTY_DESK)
@@ -79,7 +87,7 @@ class MuseumGameTest {
 
     @Test
     fun penInspectionAfterSolvedDoesNotIncreaseAttempts() {
-        val game = MuseumGame(listOf(vase, portrait))
+        val game = MuseumGame(listOf(reappearingPen))
         game.inspectReappearingPen(PenLocation.PAPERS)
         game.inspectReappearingPen(PenLocation.EMPTY_DESK)
         game.inspectReappearingPen(PenLocation.PAPERS)
@@ -92,7 +100,7 @@ class MuseumGameTest {
 
     @Test
     fun restartClearsPenProgressAlongWithGameProgress() {
-        val game = MuseumGame(listOf(vase, portrait))
+        val game = MuseumGame(listOf(reappearingPen))
         game.inspectReappearingPen(PenLocation.PAPERS)
         game.inspectReappearingPen(PenLocation.EMPTY_DESK)
 

@@ -21,6 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.museumgame.R
@@ -28,8 +33,8 @@ import com.example.museumgame.game.PenInspectionFeedback
 import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.ReappearingPenState
 import com.example.museumgame.model.Exhibit
+import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.ui.theme.MuseumGameTheme
-import com.example.museumgame.viewmodel.MuseumGameViewModel
 
 @Composable
 fun ExhibitContent(
@@ -57,7 +62,10 @@ fun ExhibitContent(
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(stringResource(exhibitNameResource(exhibit.id)))
+                    Text(
+                        stringResource(exhibitNameResource(exhibit.id)),
+                        modifier = Modifier.semantics { heading() }
+                    )
                     ExhibitIllustration(
                         exhibit = exhibit,
                         modifier = Modifier
@@ -87,7 +95,10 @@ fun ExhibitContent(
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(stringResource(exhibitNameResource(exhibit.id)))
+                Text(
+                    stringResource(exhibitNameResource(exhibit.id)),
+                    modifier = Modifier.semantics { heading() }
+                )
                 ExhibitIllustration(
                     exhibit = exhibit,
                     modifier = Modifier
@@ -136,7 +147,12 @@ private fun PenInteractiveContent(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(stringResource(penFeedbackResource(penFeedback)))
+        Text(
+            stringResource(penFeedbackResource(penFeedback)),
+            modifier = Modifier.semantics {
+                liveRegion = LiveRegionMode.Polite
+            }
+        )
         Text(stringResource(R.string.inspections, attempts))
         PenInspectionGrid(
             enabled = !solved,
@@ -170,14 +186,26 @@ private fun PenInspectionGrid(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             rowLocations.forEach { location ->
+                val inspected = location in inspectedLocations
+                val inspectionState = stringResource(
+                    if (inspected) {
+                        R.string.inspection_state_checked
+                    } else {
+                        R.string.inspection_state_not_checked
+                    }
+                )
                 Button(
                     enabled = enabled,
                     onClick = { onInspectLocation(location) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .semantics {
+                            stateDescription = inspectionState
+                        }
                 ) {
                     val label = stringResource(penLocationResource(location))
                     Text(
-                        if (location in inspectedLocations) {
+                        if (inspected) {
                             stringResource(R.string.inspected_location, label)
                         } else {
                             label
@@ -191,13 +219,13 @@ private fun PenInspectionGrid(
 
 @DrawableRes
 private fun exhibitImageResource(exhibitId: String): Int = when (exhibitId) {
-    MuseumGameViewModel.REAPPEARING_PEN_ID -> R.drawable.pen_reappears
+    ExhibitIds.REAPPEARING_PEN -> R.drawable.pen_reappears
     else -> error("No image resource mapped for exhibit ID: $exhibitId")
 }
 
 @StringRes
 internal fun exhibitNameResource(exhibitId: String): Int = when (exhibitId) {
-    MuseumGameViewModel.REAPPEARING_PEN_ID -> R.string.reappearing_pen_name
+    ExhibitIds.REAPPEARING_PEN -> R.string.reappearing_pen_name
     else -> error("No name resource mapped for exhibit ID: $exhibitId")
 }
 
@@ -263,7 +291,7 @@ private fun ReappearingPenLandscapePreview() {
 }
 
 private val previewExhibit = Exhibit(
-    id = MuseumGameViewModel.REAPPEARING_PEN_ID,
+    id = ExhibitIds.REAPPEARING_PEN,
     name = "The Reappearing Pen",
     description = "The pen reappeared.",
     isAnomaly = true

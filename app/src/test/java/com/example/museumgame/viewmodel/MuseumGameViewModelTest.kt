@@ -31,29 +31,21 @@ class MuseumGameViewModelTest {
     }
 
     @Test
-    fun returningToHallPreservesAttemptsAndSolvedState() {
+    fun returningToHallPreservesPuzzleAttemptsAndSolvedState() {
         val viewModel = MuseumGameViewModel()
         val pen = viewModel.uiState.exhibits.single()
         viewModel.openExhibit(pen)
-        viewModel.inspect(pen)
+        viewModel.inspectReappearingPen(PenLocation.PAPERS)
+        viewModel.inspectReappearingPen(PenLocation.EMPTY_DESK)
+        viewModel.inspectReappearingPen(PenLocation.PAPERS)
 
         viewModel.returnToHall()
 
         assertEquals(MuseumDestination.Hall, viewModel.uiState.destination)
-        assertEquals(1, viewModel.uiState.attempts)
+        assertEquals(3, viewModel.uiState.attempts)
         assertTrue(viewModel.uiState.solved)
-    }
-
-    @Test
-    fun inspectingDelegatesToMuseumGame() {
-        val viewModel = MuseumGameViewModel()
-        val pen = viewModel.uiState.exhibits.single()
-
-        viewModel.inspect(pen)
-
-        assertEquals(1, viewModel.uiState.attempts)
-        assertTrue(viewModel.uiState.solved)
-        assertEquals(pen.description, viewModel.uiState.message)
+        assertTrue(viewModel.uiState.reappearingPenState.solved)
+        assertEquals(PenInspectionFeedback.PEN_FOUND, viewModel.uiState.penFeedback)
     }
 
     @Test
@@ -117,6 +109,22 @@ class MuseumGameViewModelTest {
         assertEquals(3, viewModel.uiState.attempts)
         assertTrue(viewModel.uiState.solved)
         assertEquals(PenInspectionFeedback.PEN_FOUND, viewModel.uiState.penFeedback)
+    }
+
+    @Test
+    fun everyReachableSolvedPenStateIsConsistent() {
+        PenLocation.entries.forEach { target ->
+            val viewModel = MuseumGameViewModel()
+            val differentLocation = PenLocation.entries.first { it != target }
+
+            viewModel.inspectReappearingPen(target)
+            viewModel.inspectReappearingPen(differentLocation)
+            viewModel.inspectReappearingPen(target)
+
+            assertTrue(viewModel.uiState.solved)
+            assertTrue(viewModel.uiState.reappearingPenState.solved)
+            assertEquals(PenInspectionFeedback.PEN_FOUND, viewModel.uiState.penFeedback)
+        }
     }
 
     @Test

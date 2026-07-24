@@ -11,8 +11,8 @@ import com.example.museumgame.game.PenInspectionFeedback
 import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.ReappearingPenState
 import com.example.museumgame.model.Exhibit
+import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.ui.theme.MuseumGameTheme
-import com.example.museumgame.viewmodel.MuseumGameViewModel
 import org.junit.Rule
 import org.junit.Test
 
@@ -24,7 +24,7 @@ class ExhibitContentTest {
     @Test
     fun inspectionControlsAreVisibleAndTappingOneUpdatesFeedback() {
         val pen = Exhibit(
-            id = MuseumGameViewModel.REAPPEARING_PEN_ID,
+            id = ExhibitIds.REAPPEARING_PEN,
             name = "The Reappearing Pen",
             description = "The pen reappeared.",
             isAnomaly = true
