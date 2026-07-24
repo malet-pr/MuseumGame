@@ -1,8 +1,15 @@
 <resources>
     <string name="app_name">MuseumGame</string>
-    <string name="museum_hall_title">Museum Hall</string>
-    <string name="museum_hall_description">A quiet museum hall lined with unusual exhibits.</string>
-    <string name="open_exhibit">Open %1$s</string>
+    <string name="museum_entrance_title">Museum Entrance</string>
+    <string name="museum_entrance_description">The entrance to a quiet museum lined with unusual exhibits.</string>
+    <string name="resume_visit">Resume visit</string>
+    <string name="current_exhibit">Current: %1$s</string>
+    <string name="revisit_exhibit">Revisit %1$s</string>
+    <string name="locked_exhibit">Locked: %1$s</string>
+    <string name="museum_visit_complete">Museum visit complete. Every exhibit may be revisited.</string>
+    <string name="continue_visit">Continue to next exhibit</string>
+    <string name="complete_visit">Complete visit</string>
+    <string name="restart_museum">Restart museum</string>
     <string name="reappearing_pen_name">The Reappearing Pen</string>
     <string name="reappearing_pen_image_description">A six-panel museum illustration showing a pen vanishing from papers and reappearing on a filing cabinet.</string>
     <string name="slightly_wrong_name">Slightly Wrong</string>
@@ -37,5 +44,5 @@
     <string name="inspections">Inspections: %1$d</string>
     <string name="exhibit_solved">You solved the exhibit in %1$d inspections.</string>
     <string name="restart">Restart</string>
-    <string name="return_to_hall">Back to museum hall</string>
+    <string name="return_to_entrance">Back to museum entrance</string>
 </resources>

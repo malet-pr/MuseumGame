@@ -35,7 +35,10 @@ class SlightlyWrongContentTest {
                         feedback = SlightlyWrongFeedback.CORRECT_NEXT_CLUE
                     },
                     onRestart = {},
-                    onReturnToHall = {}
+                    onRestartMuseum = {},
+                    onContinue = {},
+                    isFinalExhibit = true,
+                    onReturnToEntrance = {}
                 )
             }
         }

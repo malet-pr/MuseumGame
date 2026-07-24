@@ -24,14 +24,18 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.museumgame.R
+import com.example.museumgame.game.ExhibitVisitStatus
 import com.example.museumgame.model.Exhibit
 import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.ui.theme.MuseumGameTheme
 
 @Composable
-fun MuseumHallContent(
+fun MuseumEntranceContent(
     exhibits: List<Exhibit>,
-    onOpenExhibit: (Exhibit) -> Unit,
+    visitStatuses: List<ExhibitVisitStatus>,
+    onResumeVisit: () -> Unit,
+    onOpenExhibit: (String) -> Unit,
+    onRestartMuseum: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -42,14 +46,17 @@ fun MuseumHallContent(
                     .padding(24.dp),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                HallIllustration(
+                EntranceIllustration(
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxHeight()
                 )
-                HallActions(
+                EntranceActions(
                     exhibits = exhibits,
+                    visitStatuses = visitStatuses,
+                    onResumeVisit = onResumeVisit,
                     onOpenExhibit = onOpenExhibit,
+                    onRestartMuseum = onRestartMuseum,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
@@ -65,34 +72,43 @@ fun MuseumHallContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    stringResource(R.string.museum_hall_title),
+                    stringResource(R.string.museum_entrance_title),
                     modifier = Modifier.semantics { heading() }
                 )
-                HallIllustration(
+                EntranceIllustration(
                     modifier = Modifier
                         .fillMaxWidth()
                         .sizeIn(maxHeight = 420.dp)
                 )
-                HallExhibitButtons(exhibits, onOpenExhibit)
+                EntranceVisitActions(
+                    exhibits = exhibits,
+                    visitStatuses = visitStatuses,
+                    onResumeVisit = onResumeVisit,
+                    onOpenExhibit = onOpenExhibit,
+                    onRestartMuseum = onRestartMuseum
+                )
             }
         }
     }
 }
 
 @Composable
-private fun HallIllustration(modifier: Modifier = Modifier) {
+private fun EntranceIllustration(modifier: Modifier = Modifier) {
     Image(
         painter = painterResource(R.drawable.museum_hall),
-        contentDescription = stringResource(R.string.museum_hall_description),
+        contentDescription = stringResource(R.string.museum_entrance_description),
         modifier = modifier,
         contentScale = ContentScale.Fit
     )
 }
 
 @Composable
-private fun HallActions(
+private fun EntranceActions(
     exhibits: List<Exhibit>,
-    onOpenExhibit: (Exhibit) -> Unit,
+    visitStatuses: List<ExhibitVisitStatus>,
+    onResumeVisit: () -> Unit,
+    onOpenExhibit: (String) -> Unit,
+    onRestartMuseum: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -100,27 +116,57 @@ private fun HallActions(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            stringResource(R.string.museum_hall_title),
+            stringResource(R.string.museum_entrance_title),
             modifier = Modifier.semantics { heading() }
         )
-        HallExhibitButtons(exhibits, onOpenExhibit)
+        EntranceVisitActions(
+            exhibits = exhibits,
+            visitStatuses = visitStatuses,
+            onResumeVisit = onResumeVisit,
+            onOpenExhibit = onOpenExhibit,
+            onRestartMuseum = onRestartMuseum
+        )
     }
 }
 
 @Composable
-private fun HallExhibitButtons(
+private fun EntranceVisitActions(
     exhibits: List<Exhibit>,
-    onOpenExhibit: (Exhibit) -> Unit
+    visitStatuses: List<ExhibitVisitStatus>,
+    onResumeVisit: () -> Unit,
+    onOpenExhibit: (String) -> Unit,
+    onRestartMuseum: () -> Unit
 ) {
-    exhibits.forEach { exhibit ->
-        Button(onClick = { onOpenExhibit(exhibit) }) {
+    val exhibitsById = exhibits.associateBy(Exhibit::id)
+    val currentStatus = visitStatuses.firstOrNull(ExhibitVisitStatus::current)
+
+    if (currentStatus != null) {
+        Button(onClick = onResumeVisit) {
+            Text(stringResource(R.string.resume_visit))
+        }
+    } else {
+        Text(stringResource(R.string.museum_visit_complete))
+    }
+
+    visitStatuses.forEach { status ->
+        val exhibit = requireNotNull(exhibitsById[status.exhibitId])
+        val exhibitName = stringResource(exhibitNameResource(exhibit.id))
+        Button(
+            enabled = status.completed || status.unlocked,
+            onClick = { onOpenExhibit(status.exhibitId) }
+        ) {
             Text(
-                stringResource(
-                    R.string.open_exhibit,
-                    stringResource(exhibitNameResource(exhibit.id))
-                )
+                when {
+                    status.completed -> stringResource(R.string.revisit_exhibit, exhibitName)
+                    status.current -> stringResource(R.string.current_exhibit, exhibitName)
+                    else -> stringResource(R.string.locked_exhibit, exhibitName)
+                }
             )
         }
+    }
+
+    Button(onClick = onRestartMuseum) {
+        Text(stringResource(R.string.restart_museum))
     }
 }
 
@@ -139,24 +185,45 @@ private val previewExhibits = listOf(
     )
 )
 
-@Preview(name = "Museum hall - portrait", widthDp = 412, heightDp = 915)
+private val previewVisitStatuses = listOf(
+    ExhibitVisitStatus(
+        exhibitId = ExhibitIds.REAPPEARING_PEN,
+        completed = false,
+        unlocked = true,
+        current = true
+    ),
+    ExhibitVisitStatus(
+        exhibitId = ExhibitIds.SLIGHTLY_WRONG,
+        completed = false,
+        unlocked = false,
+        current = false
+    )
+)
+
+@Preview(name = "Museum entrance - portrait", widthDp = 412, heightDp = 915)
 @Composable
-private fun MuseumHallPortraitPreview() {
+private fun MuseumEntrancePortraitPreview() {
     MuseumGameTheme {
-        MuseumHallContent(
+        MuseumEntranceContent(
             exhibits = previewExhibits,
-            onOpenExhibit = {}
+            visitStatuses = previewVisitStatuses,
+            onResumeVisit = {},
+            onOpenExhibit = {},
+            onRestartMuseum = {}
         )
     }
 }
 
-@Preview(name = "Museum hall - landscape", widthDp = 915, heightDp = 412)
+@Preview(name = "Museum entrance - landscape", widthDp = 915, heightDp = 412)
 @Composable
-private fun MuseumHallLandscapePreview() {
+private fun MuseumEntranceLandscapePreview() {
     MuseumGameTheme {
-        MuseumHallContent(
+        MuseumEntranceContent(
             exhibits = previewExhibits,
-            onOpenExhibit = {}
+            visitStatuses = previewVisitStatuses,
+            onResumeVisit = {},
+            onOpenExhibit = {},
+            onRestartMuseum = {}
         )
     }
 }

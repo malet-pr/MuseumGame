@@ -29,7 +29,10 @@ fun ReappearingPenContent(
     feedback: PenInspectionFeedback?,
     onInspectLocation: (PenLocation) -> Unit,
     onRestart: () -> Unit,
-    onReturnToHall: () -> Unit,
+    onRestartMuseum: () -> Unit,
+    onContinue: () -> Unit,
+    isFinalExhibit: Boolean,
+    onReturnToEntrance: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ResponsiveExhibitLayout(
@@ -46,21 +49,35 @@ fun ReappearingPenContent(
         )
         Text(stringResource(R.string.inspections, progress.attempts))
         PenInspectionGrid(
-            enabled = !progress.solved,
+            enabled = !puzzleState.solved,
             inspectedLocations = puzzleState.inspectedLocations,
             onInspectLocation = onInspectLocation
         )
-        if (puzzleState.penLocation != null && !progress.solved) {
+        if (puzzleState.penLocation != null && !puzzleState.solved) {
             Text(stringResource(R.string.pen_reappeared_hint))
         }
-        if (progress.solved) {
+        if (puzzleState.solved) {
             Text(stringResource(R.string.exhibit_solved, progress.attempts))
+            Button(onClick = onContinue) {
+                Text(
+                    stringResource(
+                        if (isFinalExhibit) {
+                            R.string.complete_visit
+                        } else {
+                            R.string.continue_visit
+                        }
+                    )
+                )
+            }
         }
         Button(onClick = onRestart) {
             Text(stringResource(R.string.restart))
         }
-        Button(onClick = onReturnToHall) {
-            Text(stringResource(R.string.return_to_hall))
+        Button(onClick = onRestartMuseum) {
+            Text(stringResource(R.string.restart_museum))
+        }
+        Button(onClick = onReturnToEntrance) {
+            Text(stringResource(R.string.return_to_entrance))
         }
     }
 }
@@ -137,7 +154,10 @@ private fun ReappearingPenPortraitPreview() {
             feedback = PenInspectionFeedback.PEN_REAPPEARED,
             onInspectLocation = {},
             onRestart = {},
-            onReturnToHall = {}
+            onRestartMuseum = {},
+            onContinue = {},
+            isFinalExhibit = false,
+            onReturnToEntrance = {}
         )
     }
 }
@@ -152,7 +172,10 @@ private fun ReappearingPenLandscapePreview() {
             feedback = PenInspectionFeedback.PEN_REAPPEARED,
             onInspectLocation = {},
             onRestart = {},
-            onReturnToHall = {}
+            onRestartMuseum = {},
+            onContinue = {},
+            isFinalExhibit = false,
+            onReturnToEntrance = {}
         )
     }
 }

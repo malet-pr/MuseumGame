@@ -16,24 +16,31 @@ fun MuseumScreen(
     val state = viewModel.uiState
 
     BackHandler(enabled = state.destination is MuseumDestination.ExhibitDetail) {
-        viewModel.returnToHall()
+        viewModel.returnToEntrance()
     }
 
     when (val destination = state.destination) {
-        MuseumDestination.Hall -> MuseumHallContent(
+        MuseumDestination.Entrance -> MuseumEntranceContent(
             exhibits = state.exhibits,
+            visitStatuses = state.visitStatuses,
+            onResumeVisit = viewModel::resumeVisit,
             onOpenExhibit = viewModel::openExhibit,
+            onRestartMuseum = viewModel::restartMuseum,
             modifier = modifier
         )
 
-        is MuseumDestination.ExhibitDetail -> when (destination.exhibit.id) {
+        is MuseumDestination.ExhibitDetail -> when (destination.exhibitId) {
             ExhibitIds.REAPPEARING_PEN -> ReappearingPenContent(
                 progress = state.reappearingPen.progress,
                 puzzleState = state.reappearingPen.puzzleState,
                 feedback = state.reappearingPen.feedback,
                 onInspectLocation = viewModel::inspectReappearingPen,
                 onRestart = viewModel::restartCurrentExhibit,
-                onReturnToHall = viewModel::returnToHall,
+                onRestartMuseum = viewModel::restartMuseum,
+                onContinue = viewModel::continueVisit,
+                isFinalExhibit =
+                    state.visitStatuses.lastOrNull()?.exhibitId == destination.exhibitId,
+                onReturnToEntrance = viewModel::returnToEntrance,
                 modifier = modifier
             )
 
@@ -43,11 +50,15 @@ fun MuseumScreen(
                 feedback = state.slightlyWrong.feedback,
                 onAnswer = viewModel::answerSlightlyWrong,
                 onRestart = viewModel::restartCurrentExhibit,
-                onReturnToHall = viewModel::returnToHall,
+                onRestartMuseum = viewModel::restartMuseum,
+                onContinue = viewModel::continueVisit,
+                isFinalExhibit =
+                    state.visitStatuses.lastOrNull()?.exhibitId == destination.exhibitId,
+                onReturnToEntrance = viewModel::returnToEntrance,
                 modifier = modifier
             )
 
-            else -> error("No screen mapped for exhibit ID: ${destination.exhibit.id}")
+            else -> error("No screen mapped for exhibit ID: ${destination.exhibitId}")
         }
     }
 }

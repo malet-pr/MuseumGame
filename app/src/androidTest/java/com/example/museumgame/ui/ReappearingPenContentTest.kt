@@ -36,7 +36,10 @@ class ReappearingPenContentTest {
                         feedback = PenInspectionFeedback.FIRST_LOCATION_EMPTY
                     },
                     onRestart = {},
-                    onReturnToHall = {}
+                    onRestartMuseum = {},
+                    onContinue = {},
+                    isFinalExhibit = false,
+                    onReturnToEntrance = {}
                 )
             }
         }

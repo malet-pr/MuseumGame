@@ -37,7 +37,7 @@ class MuseumFlowTest {
             .performScrollTo()
             .assertIsDisplayed()
         composeRule
-            .onNodeWithText("Back to museum hall")
+            .onNodeWithText("Back to museum entrance")
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -73,8 +73,14 @@ class MuseumFlowTest {
 
     @Test
     fun slightlyWrongCanBeOpenedAndSolved() {
+        openPenAndInspectTwoLocations()
         composeRule
-            .onNodeWithText("Open Slightly Wrong")
+            .onNodeWithText("Papers", substring = true)
+            .performScrollTo()
+            .performClick()
+        composeRule
+            .onNodeWithText("Continue to next exhibit")
+            .performScrollTo()
             .performClick()
         composeRule
             .onNodeWithText("Clock")
@@ -95,9 +101,27 @@ class MuseumFlowTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun restartMuseumResetsProgressAndReturnsToEntrance() {
+        openPenAndInspectTwoLocations()
+
+        composeRule
+            .onNodeWithText("Restart museum")
+            .performScrollTo()
+            .performClick()
+        composeRule
+            .onNodeWithText("Resume visit")
+            .performClick()
+
+        composeRule
+            .onNodeWithText("Inspections: 0")
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
     private fun openPenAndInspectTwoLocations() {
         composeRule
-            .onNodeWithText("Open The Reappearing Pen")
+            .onNodeWithText("Resume visit")
             .performClick()
         composeRule
             .onNodeWithText("Papers")

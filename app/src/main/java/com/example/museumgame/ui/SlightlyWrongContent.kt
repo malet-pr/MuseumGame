@@ -29,7 +29,10 @@ fun SlightlyWrongContent(
     feedback: SlightlyWrongFeedback?,
     onAnswer: (SlightlyWrongDetail) -> Unit,
     onRestart: () -> Unit,
-    onReturnToHall: () -> Unit,
+    onRestartMuseum: () -> Unit,
+    onContinue: () -> Unit,
+    isFinalExhibit: Boolean,
+    onReturnToEntrance: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ResponsiveExhibitLayout(
@@ -53,17 +56,31 @@ fun SlightlyWrongContent(
         )
         Text(stringResource(R.string.inspections, progress.attempts))
         SlightlyWrongAnswerGrid(
-            enabled = !progress.solved,
+            enabled = !puzzleState.solved,
             onAnswer = onAnswer
         )
-        if (progress.solved) {
+        if (puzzleState.solved) {
             Text(stringResource(R.string.exhibit_solved, progress.attempts))
+            Button(onClick = onContinue) {
+                Text(
+                    stringResource(
+                        if (isFinalExhibit) {
+                            R.string.complete_visit
+                        } else {
+                            R.string.continue_visit
+                        }
+                    )
+                )
+            }
         }
         Button(onClick = onRestart) {
             Text(stringResource(R.string.restart))
         }
-        Button(onClick = onReturnToHall) {
-            Text(stringResource(R.string.return_to_hall))
+        Button(onClick = onRestartMuseum) {
+            Text(stringResource(R.string.restart_museum))
+        }
+        Button(onClick = onReturnToEntrance) {
+            Text(stringResource(R.string.return_to_entrance))
         }
     }
 }
@@ -128,7 +145,10 @@ private fun SlightlyWrongPortraitPreview() {
             feedback = SlightlyWrongFeedback.CORRECT_NEXT_CLUE,
             onAnswer = {},
             onRestart = {},
-            onReturnToHall = {}
+            onRestartMuseum = {},
+            onContinue = {},
+            isFinalExhibit = true,
+            onReturnToEntrance = {}
         )
     }
 }
@@ -146,7 +166,10 @@ private fun SlightlyWrongLandscapePreview() {
             feedback = SlightlyWrongFeedback.CORRECT_NEXT_CLUE,
             onAnswer = {},
             onRestart = {},
-            onReturnToHall = {}
+            onRestartMuseum = {},
+            onContinue = {},
+            isFinalExhibit = true,
+            onReturnToEntrance = {}
         )
     }
 }
