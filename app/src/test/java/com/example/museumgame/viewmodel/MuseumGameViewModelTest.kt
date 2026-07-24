@@ -1,8 +1,14 @@
 package com.example.museumgame.viewmodel
 
+import com.example.museumgame.game.ExhibitProgress
 import com.example.museumgame.game.PenInspectionFeedback
 import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.ReappearingPenState
+import com.example.museumgame.game.SlightlyWrongClue
+import com.example.museumgame.game.SlightlyWrongDetail
+import com.example.museumgame.game.SlightlyWrongFeedback
+import com.example.museumgame.game.SlightlyWrongState
+import com.example.museumgame.model.ExhibitIds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -11,104 +17,59 @@ import org.junit.Test
 class MuseumGameViewModelTest {
 
     @Test
-    fun initialDestinationIsHall() {
+    fun initialDestinationIsHallWithBothExhibits() {
         val viewModel = MuseumGameViewModel()
 
         assertEquals(MuseumDestination.Hall, viewModel.uiState.destination)
-    }
-
-    @Test
-    fun openingPenEntersItsExhibit() {
-        val viewModel = MuseumGameViewModel()
-        val pen = viewModel.uiState.exhibits.single()
-
-        viewModel.openExhibit(pen)
-
         assertEquals(
-            MuseumDestination.ExhibitDetail(pen),
-            viewModel.uiState.destination
+            setOf(ExhibitIds.REAPPEARING_PEN, ExhibitIds.SLIGHTLY_WRONG),
+            viewModel.uiState.exhibits.map { it.id }.toSet()
         )
     }
 
     @Test
-    fun returningToHallPreservesPuzzleAttemptsAndSolvedState() {
+    fun eachExhibitCanBeOpenedFromHall() {
         val viewModel = MuseumGameViewModel()
-        val pen = viewModel.uiState.exhibits.single()
+
+        viewModel.uiState.exhibits.forEach { exhibit ->
+            viewModel.openExhibit(exhibit)
+            assertEquals(
+                MuseumDestination.ExhibitDetail(exhibit),
+                viewModel.uiState.destination
+            )
+            viewModel.returnToHall()
+        }
+    }
+
+    @Test
+    fun navigationDoesNotCountAsAnAttempt() {
+        val viewModel = MuseumGameViewModel()
+
+        viewModel.uiState.exhibits.forEach { exhibit ->
+            viewModel.openExhibit(exhibit)
+            viewModel.returnToHall()
+        }
+
+        assertEquals(0, viewModel.uiState.reappearingPen.progress.attempts)
+        assertEquals(0, viewModel.uiState.slightlyWrong.progress.attempts)
+    }
+
+    @Test
+    fun returningToHallPreservesPenProgress() {
+        val viewModel = MuseumGameViewModel()
+        val pen = viewModel.uiState.exhibits.first { it.id == ExhibitIds.REAPPEARING_PEN }
         viewModel.openExhibit(pen)
         viewModel.inspectReappearingPen(PenLocation.PAPERS)
         viewModel.inspectReappearingPen(PenLocation.EMPTY_DESK)
-        viewModel.inspectReappearingPen(PenLocation.PAPERS)
 
-        viewModel.returnToHall()
-
-        assertEquals(MuseumDestination.Hall, viewModel.uiState.destination)
-        assertEquals(3, viewModel.uiState.attempts)
-        assertTrue(viewModel.uiState.solved)
-        assertTrue(viewModel.uiState.reappearingPenState.solved)
-        assertEquals(PenInspectionFeedback.PEN_FOUND, viewModel.uiState.penFeedback)
-    }
-
-    @Test
-    fun navigationStateChangesDoNotCountAsInspections() {
-        val viewModel = MuseumGameViewModel()
-        val pen = viewModel.uiState.exhibits.single()
-
-        viewModel.openExhibit(pen)
         viewModel.returnToHall()
         viewModel.openExhibit(pen)
 
-        assertEquals(0, viewModel.uiState.attempts)
-        assertFalse(viewModel.uiState.solved)
-    }
-
-    @Test
-    fun penInspectionUpdatesPuzzleStateAndAttempts() {
-        val viewModel = MuseumGameViewModel()
-
-        viewModel.inspectReappearingPen(PenLocation.PAPERS)
-
-        assertEquals(1, viewModel.uiState.attempts)
+        assertEquals(2, viewModel.uiState.reappearingPen.progress.attempts)
         assertEquals(
             PenLocation.PAPERS,
-            viewModel.uiState.reappearingPenState.targetLocation
+            viewModel.uiState.reappearingPen.puzzleState.penLocation
         )
-        assertEquals(
-            PenInspectionFeedback.FIRST_LOCATION_EMPTY,
-            viewModel.uiState.penFeedback
-        )
-        assertFalse(viewModel.uiState.solved)
-    }
-
-    @Test
-    fun returningToHallPreservesPenPuzzleProgress() {
-        val viewModel = MuseumGameViewModel()
-        val pen = viewModel.uiState.exhibits.single()
-        viewModel.openExhibit(pen)
-        viewModel.inspectReappearingPen(PenLocation.PAPERS)
-        viewModel.inspectReappearingPen(PenLocation.EMPTY_DESK)
-
-        viewModel.returnToHall()
-        viewModel.openExhibit(pen)
-
-        assertEquals(2, viewModel.uiState.attempts)
-        assertEquals(
-            PenLocation.PAPERS,
-            viewModel.uiState.reappearingPenState.penLocation
-        )
-        assertFalse(viewModel.uiState.solved)
-    }
-
-    @Test
-    fun penSequenceSolvesThroughMuseumGame() {
-        val viewModel = MuseumGameViewModel()
-        viewModel.inspectReappearingPen(PenLocation.PAPERS)
-        viewModel.inspectReappearingPen(PenLocation.EMPTY_DESK)
-
-        viewModel.inspectReappearingPen(PenLocation.PAPERS)
-
-        assertEquals(3, viewModel.uiState.attempts)
-        assertTrue(viewModel.uiState.solved)
-        assertEquals(PenInspectionFeedback.PEN_FOUND, viewModel.uiState.penFeedback)
     }
 
     @Test
@@ -121,23 +82,66 @@ class MuseumGameViewModelTest {
             viewModel.inspectReappearingPen(differentLocation)
             viewModel.inspectReappearingPen(target)
 
-            assertTrue(viewModel.uiState.solved)
-            assertTrue(viewModel.uiState.reappearingPenState.solved)
-            assertEquals(PenInspectionFeedback.PEN_FOUND, viewModel.uiState.penFeedback)
+            assertTrue(viewModel.uiState.reappearingPen.progress.solved)
+            assertTrue(viewModel.uiState.reappearingPen.puzzleState.solved)
+            assertEquals(
+                PenInspectionFeedback.PEN_FOUND,
+                viewModel.uiState.reappearingPen.feedback
+            )
         }
     }
 
     @Test
-    fun restartClearsAllPenPuzzleProgress() {
+    fun slightlyWrongAnswerUpdatesOnlyItsState() {
         val viewModel = MuseumGameViewModel()
+
+        viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
+
+        assertEquals(1, viewModel.uiState.slightlyWrong.progress.attempts)
+        assertEquals(
+            SlightlyWrongClue.INCOMPLETE_NAMES,
+            viewModel.uiState.slightlyWrong.puzzleState.currentClue
+        )
+        assertEquals(
+            SlightlyWrongFeedback.CORRECT_NEXT_CLUE,
+            viewModel.uiState.slightlyWrong.feedback
+        )
+        assertEquals(ExhibitProgress(), viewModel.uiState.reappearingPen.progress)
+        assertEquals(ReappearingPenState(), viewModel.uiState.reappearingPen.puzzleState)
+    }
+
+    @Test
+    fun returningToHallPreservesSlightlyWrongProgress() {
+        val viewModel = MuseumGameViewModel()
+        val exhibit = viewModel.uiState.exhibits.first { it.id == ExhibitIds.SLIGHTLY_WRONG }
+        viewModel.openExhibit(exhibit)
+        viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
+
+        viewModel.returnToHall()
+        viewModel.openExhibit(exhibit)
+
+        assertEquals(1, viewModel.uiState.slightlyWrong.progress.attempts)
+        assertEquals(
+            SlightlyWrongClue.INCOMPLETE_NAMES,
+            viewModel.uiState.slightlyWrong.puzzleState.currentClue
+        )
+    }
+
+    @Test
+    fun restartingCurrentSlightlyWrongExhibitDoesNotResetPen() {
+        val viewModel = MuseumGameViewModel()
+        val slightlyWrong = viewModel.uiState.exhibits.first {
+            it.id == ExhibitIds.SLIGHTLY_WRONG
+        }
         viewModel.inspectReappearingPen(PenLocation.PAPERS)
-        viewModel.inspectReappearingPen(PenLocation.EMPTY_DESK)
+        viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
+        viewModel.openExhibit(slightlyWrong)
 
-        viewModel.restart()
+        viewModel.restartCurrentExhibit()
 
-        assertEquals(0, viewModel.uiState.attempts)
-        assertFalse(viewModel.uiState.solved)
-        assertEquals(ReappearingPenState(), viewModel.uiState.reappearingPenState)
-        assertEquals(null, viewModel.uiState.penFeedback)
+        assertEquals(ExhibitProgress(), viewModel.uiState.slightlyWrong.progress)
+        assertEquals(SlightlyWrongState(), viewModel.uiState.slightlyWrong.puzzleState)
+        assertEquals(1, viewModel.uiState.reappearingPen.progress.attempts)
+        assertFalse(viewModel.uiState.reappearingPen.puzzleState.solved)
     }
 }

@@ -5,6 +5,20 @@
     <string name="open_exhibit">Open %1$s</string>
     <string name="reappearing_pen_name">The Reappearing Pen</string>
     <string name="reappearing_pen_image_description">A six-panel museum illustration showing a pen vanishing from papers and reappearing on a filing cabinet.</string>
+    <string name="slightly_wrong_name">Slightly Wrong</string>
+    <string name="slightly_wrong_image_description">A dim museum room with a scrambled clock, altered book titles, a fractured globe, and a tabletop model of the solar system.</string>
+    <string name="slightly_wrong_instructions">Study the illustration and choose the detail that best answers each clue.</string>
+    <string name="slightly_wrong_clue_wrong_order">Which detail remembers numbers in the wrong order?</string>
+    <string name="slightly_wrong_clue_incomplete_names">Which detail remembers familiar names incompletely?</string>
+    <string name="slightly_wrong_clue_fragmented_places">Which detail remembers places as broken pieces?</string>
+    <string name="slightly_wrong_detail_clock">Clock</string>
+    <string name="slightly_wrong_detail_bookshelf">Bookshelf</string>
+    <string name="slightly_wrong_detail_globe">Globe</string>
+    <string name="slightly_wrong_detail_orrery">Orrery</string>
+    <string name="slightly_wrong_feedback_incorrect">That detail is strange, but it does not fit this clue. Look again.</string>
+    <string name="slightly_wrong_feedback_correct">That memory fits. One detail becomes clearer.</string>
+    <string name="slightly_wrong_feedback_solved">The almost-familiar room comes into focus. You found every altered memory.</string>
+    <string name="slightly_wrong_all_clues_complete">All three altered memories have been identified.</string>
     <string name="reappearing_pen_instructions">Inspect the scene. The pen may return somewhere you have already checked.</string>
     <string name="pen_location_papers">Papers</string>
     <string name="pen_location_faded_outline">Faded outline</string>
@@ -19,9 +33,9 @@
     <string name="pen_feedback_location_empty">No pen here. It did not move.</string>
     <string name="pen_feedback_found">The pen is back! You found the anomaly.</string>
     <string name="pen_reappeared_hint">The pen has reappeared in a previously checked location.</string>
-    <string name="room_already_solved">The room is already solved.</string>
+    <string name="exhibit_already_solved">This exhibit is already solved.</string>
     <string name="inspections">Inspections: %1$d</string>
-    <string name="room_solved">You solved the room in %1$d inspections.</string>
+    <string name="exhibit_solved">You solved the exhibit in %1$d inspections.</string>
     <string name="restart">Restart</string>
     <string name="return_to_hall">Back to museum hall</string>
 </resources>

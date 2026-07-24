@@ -124,11 +124,19 @@ private fun HallExhibitButtons(
     }
 }
 
-private val previewPen = Exhibit(
-    id = ExhibitIds.REAPPEARING_PEN,
-    name = "The Reappearing Pen",
-    description = "The pen reappeared.",
-    isAnomaly = true
+private val previewExhibits = listOf(
+    Exhibit(
+        id = ExhibitIds.REAPPEARING_PEN,
+        name = "The Reappearing Pen",
+        description = "The pen reappeared.",
+        isAnomaly = true
+    ),
+    Exhibit(
+        id = ExhibitIds.SLIGHTLY_WRONG,
+        name = "Slightly Wrong",
+        description = "Familiar details are almost correct.",
+        isAnomaly = true
+    )
 )
 
 @Preview(name = "Museum hall - portrait", widthDp = 412, heightDp = 915)
@@ -136,7 +144,7 @@ private val previewPen = Exhibit(
 private fun MuseumHallPortraitPreview() {
     MuseumGameTheme {
         MuseumHallContent(
-            exhibits = listOf(previewPen),
+            exhibits = previewExhibits,
             onOpenExhibit = {}
         )
     }
@@ -147,7 +155,7 @@ private fun MuseumHallPortraitPreview() {
 private fun MuseumHallLandscapePreview() {
     MuseumGameTheme {
         MuseumHallContent(
-            exhibits = listOf(previewPen),
+            exhibits = previewExhibits,
             onOpenExhibit = {}
         )
     }

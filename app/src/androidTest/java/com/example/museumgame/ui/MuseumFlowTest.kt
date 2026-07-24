@@ -71,6 +71,30 @@ class MuseumFlowTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun slightlyWrongCanBeOpenedAndSolved() {
+        composeRule
+            .onNodeWithText("Open Slightly Wrong")
+            .performClick()
+        composeRule
+            .onNodeWithText("Clock")
+            .performScrollTo()
+            .performClick()
+        composeRule
+            .onNodeWithText("Bookshelf")
+            .performScrollTo()
+            .performClick()
+        composeRule
+            .onNodeWithText("Globe")
+            .performScrollTo()
+            .performClick()
+
+        composeRule
+            .onNodeWithText("You solved the exhibit in 3 inspections.")
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
     private fun openPenAndInspectTwoLocations() {
         composeRule
             .onNodeWithText("Open The Reappearing Pen")

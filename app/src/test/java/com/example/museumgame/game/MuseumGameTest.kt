@@ -9,20 +9,6 @@ import org.junit.Test
 
 class MuseumGameTest {
 
-    private val vase = Exhibit(
-        id = "ancient_vase",
-        name = "Ancient vase",
-        description = "Nothing suspicious.",
-        isAnomaly = false
-    )
-
-    private val portrait = Exhibit(
-        id = "portrait",
-        name = "Portrait",
-        description = "The portrait blinked.",
-        isAnomaly = true
-    )
-
     private val reappearingPen = Exhibit(
         id = ExhibitIds.REAPPEARING_PEN,
         name = "The Reappearing Pen",
@@ -30,84 +16,102 @@ class MuseumGameTest {
         isAnomaly = true
     )
 
-    @Test
-    fun inspectingNormalExhibitIncreasesAttemptsWithoutSolvingRoom() {
-        val game = MuseumGame(listOf(vase, portrait))
-
-        game.inspect(vase)
-
-        assertEquals(1, game.attempts)
-        assertFalse(game.solved)
-    }
+    private val slightlyWrong = Exhibit(
+        id = ExhibitIds.SLIGHTLY_WRONG,
+        name = "Slightly Wrong",
+        description = "Familiar details are almost correct.",
+        isAnomaly = true
+    )
 
     @Test
-    fun inspectingAnomalySolvesRoom() {
-        val game = MuseumGame(listOf(vase, portrait))
-
-        game.inspect(portrait)
-
-        assertEquals(1, game.attempts)
-        assertTrue(game.solved)
-    }
-
-    @Test
-    fun restartClearsProgress() {
-        val game = MuseumGame(listOf(vase, portrait))
-        game.inspect(portrait)
-
-        game.restart()
-
-        assertEquals(0, game.attempts)
-        assertFalse(game.solved)
-    }
-
-    @Test
-    fun inspectingAfterRoomIsSolvedDoesNotIncreaseAttempts() {
-        val game = MuseumGame(listOf(vase, portrait))
-
-        game.inspect(portrait)
-        val message = game.inspect(vase)
-
-        assertEquals(1, game.attempts)
-        assertTrue(game.solved)
-        assertEquals("The room is already solved.", message)
-    }
-
-    @Test
-    fun penInspectionChoicesIncrementAttemptsAndSolveOnReturnToTarget() {
-        val game = MuseumGame(listOf(reappearingPen))
+    fun penChoicesIncrementOnlyPenAttemptsAndSolveOnTarget() {
+        val game = MuseumGame(listOf(reappearingPen, slightlyWrong))
 
         game.inspectReappearingPen(PenLocation.PAPERS)
         game.inspectReappearingPen(PenLocation.EMPTY_DESK)
         game.inspectReappearingPen(PenLocation.PAPERS)
 
-        assertEquals(3, game.attempts)
-        assertTrue(game.solved)
+        assertEquals(3, game.reappearingPenProgress.attempts)
+        assertTrue(game.reappearingPenProgress.solved)
+        assertEquals(0, game.slightlyWrongProgress.attempts)
     }
 
     @Test
-    fun penInspectionAfterSolvedDoesNotIncreaseAttempts() {
-        val game = MuseumGame(listOf(reappearingPen))
+    fun penChoiceAfterSolvedDoesNotIncreaseAttempts() {
+        val game = MuseumGame(listOf(reappearingPen, slightlyWrong))
         game.inspectReappearingPen(PenLocation.PAPERS)
         game.inspectReappearingPen(PenLocation.EMPTY_DESK)
         game.inspectReappearingPen(PenLocation.PAPERS)
 
         val result = game.inspectReappearingPen(PenLocation.FILING_CABINET)
 
-        assertEquals(3, game.attempts)
+        assertEquals(3, game.reappearingPenProgress.attempts)
         assertEquals(PenInspectionFeedback.ALREADY_SOLVED, result.feedback)
     }
 
     @Test
-    fun restartClearsPenProgressAlongWithGameProgress() {
-        val game = MuseumGame(listOf(reappearingPen))
+    fun slightlyWrongAnswersIncrementOnlyItsAttemptsAndSolveInOrder() {
+        val game = MuseumGame(listOf(reappearingPen, slightlyWrong))
+
+        game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
+        game.answerSlightlyWrong(SlightlyWrongDetail.BOOKSHELF)
+        game.answerSlightlyWrong(SlightlyWrongDetail.GLOBE)
+
+        assertEquals(3, game.slightlyWrongProgress.attempts)
+        assertTrue(game.slightlyWrongProgress.solved)
+        assertEquals(0, game.reappearingPenProgress.attempts)
+    }
+
+    @Test
+    fun wrongSlightlyWrongAnswerCountsWithoutAdvancing() {
+        val game = MuseumGame(listOf(reappearingPen, slightlyWrong))
+
+        val result = game.answerSlightlyWrong(SlightlyWrongDetail.ORRERY)
+
+        assertEquals(1, game.slightlyWrongProgress.attempts)
+        assertFalse(game.slightlyWrongProgress.solved)
+        assertEquals(SlightlyWrongClue.WRONG_ORDER, result.state.currentClue)
+        assertEquals(SlightlyWrongFeedback.INCORRECT, result.feedback)
+    }
+
+    @Test
+    fun answerAfterSlightlyWrongSolvedDoesNotIncreaseAttempts() {
+        val game = MuseumGame(listOf(reappearingPen, slightlyWrong))
+        game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
+        game.answerSlightlyWrong(SlightlyWrongDetail.BOOKSHELF)
+        game.answerSlightlyWrong(SlightlyWrongDetail.GLOBE)
+
+        val result = game.answerSlightlyWrong(SlightlyWrongDetail.ORRERY)
+
+        assertEquals(3, game.slightlyWrongProgress.attempts)
+        assertEquals(SlightlyWrongFeedback.ALREADY_SOLVED, result.feedback)
+    }
+
+    @Test
+    fun restartingPenDoesNotResetSlightlyWrong() {
+        val game = MuseumGame(listOf(reappearingPen, slightlyWrong))
         game.inspectReappearingPen(PenLocation.PAPERS)
-        game.inspectReappearingPen(PenLocation.EMPTY_DESK)
+        game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
 
-        game.restart()
+        game.restartReappearingPen()
 
-        assertEquals(0, game.attempts)
-        assertFalse(game.solved)
+        assertEquals(ExhibitProgress(), game.reappearingPenProgress)
         assertEquals(ReappearingPenState(), game.reappearingPenState)
+        assertEquals(1, game.slightlyWrongProgress.attempts)
+        assertEquals(SlightlyWrongClue.INCOMPLETE_NAMES, game.slightlyWrongState.currentClue)
+    }
+
+    @Test
+    fun restartingSlightlyWrongDoesNotResetPen() {
+        val game = MuseumGame(listOf(reappearingPen, slightlyWrong))
+        game.inspectReappearingPen(PenLocation.PAPERS)
+        game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
+
+        game.restartSlightlyWrong()
+
+        assertEquals(ExhibitProgress(), game.slightlyWrongProgress)
+        assertEquals(SlightlyWrongState(), game.slightlyWrongState)
+        assertEquals(1, game.reappearingPenProgress.attempts)
+        assertEquals(PenLocation.PAPERS, game.reappearingPenState.targetLocation)
     }
 }

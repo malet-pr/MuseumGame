@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.viewmodel.MuseumDestination
 import com.example.museumgame.viewmodel.MuseumGameViewModel
 
@@ -25,16 +26,28 @@ fun MuseumScreen(
             modifier = modifier
         )
 
-        is MuseumDestination.ExhibitDetail -> ExhibitContent(
-            exhibit = destination.exhibit,
-            attempts = state.attempts,
-            solved = state.solved,
-            penState = state.reappearingPenState,
-            penFeedback = state.penFeedback,
-            onInspectLocation = viewModel::inspectReappearingPen,
-            onRestart = viewModel::restart,
-            onReturnToHall = viewModel::returnToHall,
-            modifier = modifier
-        )
+        is MuseumDestination.ExhibitDetail -> when (destination.exhibit.id) {
+            ExhibitIds.REAPPEARING_PEN -> ReappearingPenContent(
+                progress = state.reappearingPen.progress,
+                puzzleState = state.reappearingPen.puzzleState,
+                feedback = state.reappearingPen.feedback,
+                onInspectLocation = viewModel::inspectReappearingPen,
+                onRestart = viewModel::restartCurrentExhibit,
+                onReturnToHall = viewModel::returnToHall,
+                modifier = modifier
+            )
+
+            ExhibitIds.SLIGHTLY_WRONG -> SlightlyWrongContent(
+                progress = state.slightlyWrong.progress,
+                puzzleState = state.slightlyWrong.puzzleState,
+                feedback = state.slightlyWrong.feedback,
+                onAnswer = viewModel::answerSlightlyWrong,
+                onRestart = viewModel::restartCurrentExhibit,
+                onReturnToHall = viewModel::returnToHall,
+                modifier = modifier
+            )
+
+            else -> error("No screen mapped for exhibit ID: ${destination.exhibit.id}")
+        }
     }
 }
