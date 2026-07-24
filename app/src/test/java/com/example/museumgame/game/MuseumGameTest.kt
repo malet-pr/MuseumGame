@@ -64,4 +64,42 @@ class MuseumGameTest {
         assertTrue(game.solved)
         assertEquals("The room is already solved.", message)
     }
+
+    @Test
+    fun penInspectionChoicesIncrementAttemptsAndSolveOnReturnToTarget() {
+        val game = MuseumGame(listOf(vase, portrait))
+
+        game.inspectReappearingPen(PenLocation.PAPERS)
+        game.inspectReappearingPen(PenLocation.EMPTY_DESK)
+        game.inspectReappearingPen(PenLocation.PAPERS)
+
+        assertEquals(3, game.attempts)
+        assertTrue(game.solved)
+    }
+
+    @Test
+    fun penInspectionAfterSolvedDoesNotIncreaseAttempts() {
+        val game = MuseumGame(listOf(vase, portrait))
+        game.inspectReappearingPen(PenLocation.PAPERS)
+        game.inspectReappearingPen(PenLocation.EMPTY_DESK)
+        game.inspectReappearingPen(PenLocation.PAPERS)
+
+        val result = game.inspectReappearingPen(PenLocation.FILING_CABINET)
+
+        assertEquals(3, game.attempts)
+        assertEquals(PenInspectionFeedback.ALREADY_SOLVED, result.feedback)
+    }
+
+    @Test
+    fun restartClearsPenProgressAlongWithGameProgress() {
+        val game = MuseumGame(listOf(vase, portrait))
+        game.inspectReappearingPen(PenLocation.PAPERS)
+        game.inspectReappearingPen(PenLocation.EMPTY_DESK)
+
+        game.restart()
+
+        assertEquals(0, game.attempts)
+        assertFalse(game.solved)
+        assertEquals(ReappearingPenState(), game.reappearingPenState)
+    }
 }

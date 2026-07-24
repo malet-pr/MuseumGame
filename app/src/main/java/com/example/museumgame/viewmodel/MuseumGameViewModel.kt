@@ -5,6 +5,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.museumgame.game.MuseumGame
+import com.example.museumgame.game.PenInspectionFeedback
+import com.example.museumgame.game.PenLocation
+import com.example.museumgame.game.ReappearingPenState
 import com.example.museumgame.model.Exhibit
 
 sealed interface MuseumDestination {
@@ -17,7 +20,9 @@ data class MuseumUiState(
     val exhibits: List<Exhibit>,
     val message: String,
     val attempts: Int = 0,
-    val solved: Boolean = false
+    val solved: Boolean = false,
+    val reappearingPenState: ReappearingPenState = ReappearingPenState(),
+    val penFeedback: PenInspectionFeedback? = null
 )
 
 class MuseumGameViewModel : ViewModel() {
@@ -61,13 +66,25 @@ class MuseumGameViewModel : ViewModel() {
         )
     }
 
+    fun inspectReappearingPen(location: PenLocation) {
+        val result = game.inspectReappearingPen(location)
+        uiState = uiState.copy(
+            attempts = game.attempts,
+            solved = game.solved,
+            reappearingPenState = result.state,
+            penFeedback = result.feedback
+        )
+    }
+
     fun restart() {
         game.restart()
 
         uiState = uiState.copy(
             message = INITIAL_MESSAGE,
             attempts = game.attempts,
-            solved = game.solved
+            solved = game.solved,
+            reappearingPenState = game.reappearingPenState,
+            penFeedback = null
         )
     }
 

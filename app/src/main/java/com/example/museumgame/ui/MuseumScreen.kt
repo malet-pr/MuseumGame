@@ -29,7 +29,9 @@ fun MuseumScreen(
             exhibit = destination.exhibit,
             attempts = state.attempts,
             solved = state.solved,
-            onInspect = viewModel::inspect,
+            penState = state.reappearingPenState,
+            penFeedback = state.penFeedback,
+            onInspectLocation = viewModel::inspectReappearingPen,
             onRestart = viewModel::restart,
             onReturnToHall = viewModel::returnToHall,
             modifier = modifier
