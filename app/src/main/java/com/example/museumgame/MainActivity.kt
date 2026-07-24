@@ -19,7 +19,9 @@ class MainActivity : ComponentActivity() {
             MuseumGameTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     MuseumScreen(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
                     )
                 }
             }
