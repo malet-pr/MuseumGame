@@ -25,7 +25,7 @@ fun MuseumScreen(
     var showRestartMuseumConfirmation by rememberSaveable { mutableStateOf(false) }
     val requestMuseumRestart = { showRestartMuseumConfirmation = true }
 
-    BackHandler(enabled = state.destination is MuseumDestination.ExhibitDetail) {
+    BackHandler(enabled = state.destination != MuseumDestination.Entrance) {
         viewModel.returnToEntrance()
     }
 
@@ -35,6 +35,12 @@ fun MuseumScreen(
             visitStatuses = state.visitStatuses,
             onResumeVisit = viewModel::resumeVisit,
             onOpenExhibit = viewModel::openExhibit,
+            onRestartMuseum = requestMuseumRestart,
+            modifier = modifier
+        )
+
+        MuseumDestination.Finale -> MuseumFinaleContent(
+            onReturnToEntrance = viewModel::returnToEntrance,
             onRestartMuseum = requestMuseumRestart,
             modifier = modifier
         )
@@ -105,6 +111,21 @@ fun MuseumScreen(
                 feedback = state.nearOccurrence.feedback,
                 onAdvance = viewModel::advanceNearOccurrence,
                 onPreserve = viewModel::preserveNearOccurrence,
+                onRestart = viewModel::restartCurrentExhibit,
+                onRestartMuseum = requestMuseumRestart,
+                onContinue = viewModel::continueVisit,
+                isFinalExhibit =
+                    state.visitStatuses.lastOrNull()?.exhibitId == destination.exhibitId,
+                onReturnToEntrance = viewModel::returnToEntrance,
+                modifier = modifier
+            )
+
+            ExhibitUiScreen.CREATIVE_CHAOS -> CreativeChaosContent(
+                progress = state.creativeChaos.progress,
+                puzzleState = state.creativeChaos.puzzleState,
+                feedback = state.creativeChaos.feedback,
+                onTogglePiece = viewModel::toggleCreativeChaosPiece,
+                onCombine = viewModel::combineCreativeChaos,
                 onRestart = viewModel::restartCurrentExhibit,
                 onRestartMuseum = requestMuseumRestart,
                 onContinue = viewModel::continueVisit,

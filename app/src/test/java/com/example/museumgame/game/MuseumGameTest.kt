@@ -24,6 +24,7 @@ class MuseumGameTest {
         assertEquals(0, game.workApparentProgress.attempts)
         assertEquals(0, game.simulatedProgressProgress.attempts)
         assertEquals(0, game.nearOccurrenceProgress.attempts)
+        assertEquals(0, game.creativeChaosProgress.attempts)
     }
 
     @Test
@@ -54,6 +55,7 @@ class MuseumGameTest {
         assertEquals(0, game.workApparentProgress.attempts)
         assertEquals(0, game.simulatedProgressProgress.attempts)
         assertEquals(0, game.nearOccurrenceProgress.attempts)
+        assertEquals(0, game.creativeChaosProgress.attempts)
     }
 
     @Test
@@ -241,6 +243,68 @@ class MuseumGameTest {
     }
 
     @Test
+    fun creativeChaosCannotAdvanceBeforeNearOccurrenceCompletion() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+
+        val selection = game.toggleCreativeChaosPiece(ChaosPiece.GRID)
+        val combine = game.combineCreativeChaos()
+
+        assertEquals(CreativeChaosFeedback.LOCKED, selection.feedback)
+        assertEquals(CreativeChaosFeedback.LOCKED, combine.feedback)
+        assertEquals(ExhibitProgress(), game.creativeChaosProgress)
+        assertEquals(CreativeChaosState(), game.creativeChaosState)
+        assertFalse(game.isCompleted(ExhibitIds.CREATIVE_CHAOS))
+    }
+
+    @Test
+    fun creativeChaosCountsOnlyCompletePairSubmissions() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.NEAR_OCCURRENCE)
+
+        game.combineCreativeChaos()
+        game.toggleCreativeChaosPiece(ChaosPiece.GRID)
+        game.combineCreativeChaos()
+        game.toggleCreativeChaosPiece(ChaosPiece.CODE)
+        game.combineCreativeChaos()
+
+        assertEquals(1, game.creativeChaosProgress.attempts)
+        assertEquals(CreativeChaosStep.FORM_PATTERN, game.creativeChaosState.step)
+        assertEquals(
+            CreativeChaosFeedback.WRONG_PAIR,
+            game.creativeChaosFeedback
+        )
+    }
+
+    @Test
+    fun creativeChaosThreeCorrectPairsSolveInThreeAttempts() {
+        val game = newGame()
+
+        game.solveThrough(ExhibitIds.CREATIVE_CHAOS)
+
+        assertEquals(3, game.creativeChaosProgress.attempts)
+        assertTrue(game.creativeChaosState.solved)
+        assertEquals(
+            CreativeChaosFeedback.PUZZLE_SOLVED,
+            game.creativeChaosFeedback
+        )
+    }
+
+    @Test
+    fun creativeChaosActionAfterSolvedDoesNotIncreaseAttempts() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.CREATIVE_CHAOS)
+
+        val result = game.combineCreativeChaos()
+
+        assertEquals(3, game.creativeChaosProgress.attempts)
+        assertEquals(
+            CreativeChaosFeedback.ALREADY_SOLVED,
+            result.feedback
+        )
+    }
+
+    @Test
     fun restartingPenAfterSlightlyWrongProgressResetsBothExhibits() {
         val game = newGame()
         game.solveThrough(ExhibitIds.REAPPEARING_PEN)
@@ -258,11 +322,14 @@ class MuseumGameTest {
         assertEquals(SimulatedProgressState(), game.simulatedProgressState)
         assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
         assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
+        assertEquals(ExhibitProgress(), game.creativeChaosProgress)
+        assertEquals(CreativeChaosState(), game.creativeChaosState)
         assertNull(game.reappearingPenFeedback)
         assertNull(game.slightlyWrongFeedback)
         assertNull(game.workApparentFeedback)
         assertNull(game.simulatedProgressFeedback)
         assertNull(game.nearOccurrenceFeedback)
+        assertNull(game.creativeChaosFeedback)
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
     }
 
@@ -318,9 +385,12 @@ class MuseumGameTest {
         assertEquals(SimulatedProgressState(), game.simulatedProgressState)
         assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
         assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
+        assertEquals(ExhibitProgress(), game.creativeChaosProgress)
+        assertEquals(CreativeChaosState(), game.creativeChaosState)
         assertNull(game.workApparentFeedback)
         assertNull(game.simulatedProgressFeedback)
         assertNull(game.nearOccurrenceFeedback)
+        assertNull(game.creativeChaosFeedback)
         assertTrue(game.isUnlocked(ExhibitIds.WORK_APPARENT))
     }
 
@@ -339,8 +409,11 @@ class MuseumGameTest {
         assertEquals(SimulatedProgressState(), game.simulatedProgressState)
         assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
         assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
+        assertEquals(ExhibitProgress(), game.creativeChaosProgress)
+        assertEquals(CreativeChaosState(), game.creativeChaosState)
         assertNull(game.simulatedProgressFeedback)
         assertNull(game.nearOccurrenceFeedback)
+        assertNull(game.creativeChaosFeedback)
         assertTrue(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
         assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
     }
@@ -348,8 +421,8 @@ class MuseumGameTest {
     @Test
     fun restartingNearOccurrencePreservesEveryEarlierExhibit() {
         val game = newGame()
-        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
-        game.advanceNearOccurrence()
+        game.solveThrough(ExhibitIds.NEAR_OCCURRENCE)
+        game.toggleCreativeChaosPiece(ChaosPiece.GRID)
 
         game.restartExhibit(ExhibitIds.NEAR_OCCURRENCE)
 
@@ -359,8 +432,31 @@ class MuseumGameTest {
         assertTrue(game.simulatedProgressState.solved)
         assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
         assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
+        assertEquals(ExhibitProgress(), game.creativeChaosProgress)
+        assertEquals(CreativeChaosState(), game.creativeChaosState)
         assertNull(game.nearOccurrenceFeedback)
+        assertNull(game.creativeChaosFeedback)
         assertTrue(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
+        assertFalse(game.isUnlocked(ExhibitIds.CREATIVE_CHAOS))
+    }
+
+    @Test
+    fun restartingCreativeChaosPreservesEveryEarlierExhibit() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.NEAR_OCCURRENCE)
+        game.toggleCreativeChaosPiece(ChaosPiece.GRID)
+
+        game.restartExhibit(ExhibitIds.CREATIVE_CHAOS)
+
+        assertTrue(game.reappearingPenState.solved)
+        assertTrue(game.slightlyWrongState.solved)
+        assertTrue(game.workApparentState.solved)
+        assertTrue(game.simulatedProgressState.solved)
+        assertTrue(game.nearOccurrenceState.solved)
+        assertEquals(ExhibitProgress(), game.creativeChaosProgress)
+        assertEquals(CreativeChaosState(), game.creativeChaosState)
+        assertNull(game.creativeChaosFeedback)
+        assertTrue(game.isUnlocked(ExhibitIds.CREATIVE_CHAOS))
     }
 
     @Test
@@ -373,6 +469,7 @@ class MuseumGameTest {
         assertFalse(game.isUnlocked(ExhibitIds.WORK_APPARENT))
         assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
         assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
+        assertFalse(game.isUnlocked(ExhibitIds.CREATIVE_CHAOS))
         assertEquals(
             ExhibitIds.SLIGHTLY_WRONG,
             game.nextExhibitId(ExhibitIds.REAPPEARING_PEN)
@@ -380,6 +477,10 @@ class MuseumGameTest {
         assertEquals(
             ExhibitIds.NEAR_OCCURRENCE,
             game.nextExhibitId(ExhibitIds.SIMULATED_PROGRESS)
+        )
+        assertEquals(
+            ExhibitIds.CREATIVE_CHAOS,
+            game.nextExhibitId(ExhibitIds.NEAR_OCCURRENCE)
         )
     }
 
@@ -393,6 +494,7 @@ class MuseumGameTest {
         assertFalse(game.isUnlocked(ExhibitIds.WORK_APPARENT))
         assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
         assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
+        assertFalse(game.isUnlocked(ExhibitIds.CREATIVE_CHAOS))
         assertTrue(game.visitStatuses().first { it.exhibitId == ExhibitIds.REAPPEARING_PEN }.completed)
     }
 
@@ -419,6 +521,7 @@ class MuseumGameTest {
         )
         assertTrue(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
         assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
+        assertFalse(game.isUnlocked(ExhibitIds.CREATIVE_CHAOS))
     }
 
     @Test
@@ -432,13 +535,29 @@ class MuseumGameTest {
             game.firstUnfinishedExhibitId()
         )
         assertTrue(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
+        assertFalse(game.isUnlocked(ExhibitIds.CREATIVE_CHAOS))
+    }
+
+    @Test
+    fun solvingNearOccurrenceUnlocksCreativeChaosAndMakesItCurrent() {
+        val game = newGame()
+
+        game.solveThrough(ExhibitIds.NEAR_OCCURRENCE)
+
+        assertEquals(
+            ExhibitIds.CREATIVE_CHAOS,
+            game.firstUnfinishedExhibitId()
+        )
+        assertTrue(game.isUnlocked(ExhibitIds.CREATIVE_CHAOS))
     }
 
     @Test
     fun restartMuseumClearsEveryPuzzleAndRestoresInitialProgression() {
         val game = newGame()
-        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
-        game.advanceNearOccurrence()
+        game.solveThrough(ExhibitIds.NEAR_OCCURRENCE)
+        game.toggleCreativeChaosPiece(ChaosPiece.GRID)
+        game.toggleCreativeChaosPiece(ChaosPiece.CODE)
+        game.combineCreativeChaos()
 
         game.restartMuseum()
 
@@ -447,21 +566,25 @@ class MuseumGameTest {
         assertEquals(ExhibitProgress(), game.workApparentProgress)
         assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
         assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
+        assertEquals(ExhibitProgress(), game.creativeChaosProgress)
         assertEquals(ReappearingPenState(), game.reappearingPenState)
         assertEquals(SlightlyWrongState(), game.slightlyWrongState)
         assertEquals(WorkApparentState(), game.workApparentState)
         assertEquals(SimulatedProgressState(), game.simulatedProgressState)
         assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
+        assertEquals(CreativeChaosState(), game.creativeChaosState)
         assertNull(game.reappearingPenFeedback)
         assertNull(game.slightlyWrongFeedback)
         assertNull(game.workApparentFeedback)
         assertNull(game.simulatedProgressFeedback)
         assertNull(game.nearOccurrenceFeedback)
+        assertNull(game.creativeChaosFeedback)
         assertEquals(ExhibitIds.REAPPEARING_PEN, game.firstUnfinishedExhibitId())
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
         assertFalse(game.isUnlocked(ExhibitIds.WORK_APPARENT))
         assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
         assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
+        assertFalse(game.isUnlocked(ExhibitIds.CREATIVE_CHAOS))
     }
 
     @Test
@@ -477,6 +600,9 @@ class MuseumGameTest {
         assertNoCompletedLockedState(game)
         game.advanceNearOccurrence()
         assertNoCompletedLockedState(game)
+        game.toggleCreativeChaosPiece(ChaosPiece.GRID)
+        game.combineCreativeChaos()
+        assertNoCompletedLockedState(game)
         game.solveThrough(ExhibitIds.REAPPEARING_PEN)
         assertNoCompletedLockedState(game)
         game.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
@@ -486,6 +612,10 @@ class MuseumGameTest {
         game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
         assertNoCompletedLockedState(game)
         game.solveThrough(ExhibitIds.NEAR_OCCURRENCE)
+        assertNoCompletedLockedState(game)
+        game.solveThrough(ExhibitIds.CREATIVE_CHAOS)
+        assertNoCompletedLockedState(game)
+        game.restartExhibit(ExhibitIds.CREATIVE_CHAOS)
         assertNoCompletedLockedState(game)
         game.restartExhibit(ExhibitIds.NEAR_OCCURRENCE)
         assertNoCompletedLockedState(game)

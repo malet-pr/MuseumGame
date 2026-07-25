@@ -18,6 +18,14 @@ class ExhibitCatalogCoverageTest {
     }
 
     @Test
+    fun catalogContainsSixPlayableExhibitsAndExcludesKubernetesCityFinale() {
+        val catalogIds = ExhibitCatalog.orderedExhibits.map(Exhibit::id)
+
+        assertEquals(6, catalogIds.size)
+        assertFalse("kubernetes_city" in catalogIds)
+    }
+
+    @Test
     fun everyCatalogEntryHasCompletionProgressAndRestartHandling() {
         val game = MuseumGame()
 

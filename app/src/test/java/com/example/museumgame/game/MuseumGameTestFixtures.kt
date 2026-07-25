@@ -1,6 +1,7 @@
 package com.example.museumgame.game
 
 import com.example.museumgame.model.ExhibitIds
+import com.example.museumgame.testsupport.CREATIVE_CHAOS_RECIPES
 import com.example.museumgame.testsupport.SIMULATED_PROGRESS_CLASSIFICATIONS
 import com.example.museumgame.testsupport.WORK_APPARENT_TRACE_SEQUENCE
 
@@ -40,6 +41,13 @@ internal fun MuseumGame.solveThrough(targetExhibitId: String) {
                     advanceNearOccurrence()
                     advanceNearOccurrence()
                     preserveNearOccurrence()
+                }
+
+                ExhibitIds.CREATIVE_CHAOS -> {
+                    CREATIVE_CHAOS_RECIPES.forEach { recipe ->
+                        recipe.forEach(::toggleCreativeChaosPiece)
+                        combineCreativeChaos()
+                    }
                 }
 
                 else -> error("No test solver mapped for exhibit ID: $exhibitId")

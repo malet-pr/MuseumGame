@@ -4,6 +4,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.museumgame.game.ChaosPiece
+import com.example.museumgame.game.CreativeChaosFeedback
+import com.example.museumgame.game.CreativeChaosState
 import com.example.museumgame.game.ExhibitProgress
 import com.example.museumgame.game.ExhibitVisitStatus
 import com.example.museumgame.game.MuseumGame
@@ -28,6 +31,7 @@ import com.example.museumgame.model.ExhibitIds
 sealed interface MuseumDestination {
     data object Entrance : MuseumDestination
     data class ExhibitDetail(val exhibitId: String) : MuseumDestination
+    data object Finale : MuseumDestination
 }
 
 data class MuseumUiState(
@@ -38,7 +42,8 @@ data class MuseumUiState(
     val slightlyWrong: SlightlyWrongUiState = SlightlyWrongUiState(),
     val workApparent: WorkApparentUiState = WorkApparentUiState(),
     val simulatedProgress: SimulatedProgressUiState = SimulatedProgressUiState(),
-    val nearOccurrence: NearOccurrenceUiState = NearOccurrenceUiState()
+    val nearOccurrence: NearOccurrenceUiState = NearOccurrenceUiState(),
+    val creativeChaos: CreativeChaosUiState = CreativeChaosUiState()
 )
 
 data class ReappearingPenUiState(
@@ -69,6 +74,12 @@ data class NearOccurrenceUiState(
     val progress: ExhibitProgress = ExhibitProgress(),
     val puzzleState: NearOccurrenceState = NearOccurrenceState(),
     val feedback: NearOccurrenceFeedback? = null
+)
+
+data class CreativeChaosUiState(
+    val progress: ExhibitProgress = ExhibitProgress(),
+    val puzzleState: CreativeChaosState = CreativeChaosState(),
+    val feedback: CreativeChaosFeedback? = null
 )
 
 class MuseumGameViewModel : ViewModel() {
@@ -106,10 +117,17 @@ class MuseumGameViewModel : ViewModel() {
                 ?: return
         if (!game.isCompleted(exhibitId)) return
 
+        val nextExhibitId = game.nextExhibitId(exhibitId)
         uiState = uiState.copy(
-            destination = game.nextExhibitId(exhibitId)
-                ?.let { MuseumDestination.ExhibitDetail(it) }
-                ?: MuseumDestination.Entrance
+            destination = when {
+                nextExhibitId != null ->
+                    MuseumDestination.ExhibitDetail(nextExhibitId)
+
+                exhibitId == ExhibitIds.CREATIVE_CHAOS ->
+                    MuseumDestination.Finale
+
+                else -> MuseumDestination.Entrance
+            }
         )
     }
 
@@ -166,6 +184,20 @@ class MuseumGameViewModel : ViewModel() {
         refreshDomainState()
     }
 
+    fun toggleCreativeChaosPiece(piece: ChaosPiece) {
+        if (!canActIn(ExhibitIds.CREATIVE_CHAOS)) return
+
+        game.toggleCreativeChaosPiece(piece)
+        refreshDomainState()
+    }
+
+    fun combineCreativeChaos() {
+        if (!canActIn(ExhibitIds.CREATIVE_CHAOS)) return
+
+        game.combineCreativeChaos()
+        refreshDomainState()
+    }
+
     fun restartCurrentExhibit() {
         val exhibitId =
             (uiState.destination as? MuseumDestination.ExhibitDetail)?.exhibitId
@@ -213,6 +245,11 @@ class MuseumGameViewModel : ViewModel() {
                 progress = game.nearOccurrenceProgress,
                 puzzleState = game.nearOccurrenceState,
                 feedback = game.nearOccurrenceFeedback
+            ),
+            creativeChaos = CreativeChaosUiState(
+                progress = game.creativeChaosProgress,
+                puzzleState = game.creativeChaosState,
+                feedback = game.creativeChaosFeedback
             )
         )
     }

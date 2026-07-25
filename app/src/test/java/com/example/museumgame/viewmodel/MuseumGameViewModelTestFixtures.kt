@@ -4,6 +4,7 @@ import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.SlightlyWrongDetail
 import com.example.museumgame.game.WorkApparentInterruption
 import com.example.museumgame.model.ExhibitIds
+import com.example.museumgame.testsupport.CREATIVE_CHAOS_RECIPES
 import com.example.museumgame.testsupport.SIMULATED_PROGRESS_CLASSIFICATIONS
 import com.example.museumgame.testsupport.WORK_APPARENT_TRACE_SEQUENCE
 
@@ -48,6 +49,13 @@ internal fun MuseumGameViewModel.solveThrough(targetExhibitId: String) {
                     advanceNearOccurrence()
                     advanceNearOccurrence()
                     preserveNearOccurrence()
+                }
+
+                ExhibitIds.CREATIVE_CHAOS -> {
+                    CREATIVE_CHAOS_RECIPES.forEach { recipe ->
+                        recipe.forEach(::toggleCreativeChaosPiece)
+                        combineCreativeChaos()
+                    }
                 }
 
                 else -> error("No ViewModel test solver mapped for exhibit ID: $exhibitId")

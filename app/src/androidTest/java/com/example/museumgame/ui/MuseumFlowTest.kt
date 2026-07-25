@@ -182,6 +182,11 @@ class MuseumFlowTest {
             .performScrollTo()
             .assertIsDisplayed()
             .assertIsNotEnabled()
+        composeRule
+            .onNodeWithText("Locked: Creative Chaos")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
     }
 
     @Test
@@ -212,12 +217,22 @@ class MuseumFlowTest {
 
     @Test
     fun completeMuseumJourneySmokeTest() {
-        openNearOccurrence()
-        solveNearOccurrence()
+        openCreativeChaos()
+        solveCreativeChaos()
         composeRule
             .onNodeWithText("Complete visit")
             .performScrollTo()
             .performClick()
+
+        assertFinaleIsDisplayed()
+
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitForIdle()
+
+        assertFinaleIsDisplayed()
+
+        pressBack()
+        composeRule.waitForIdle()
 
         composeRule
             .onNodeWithText("Museum visit complete. Every exhibit may be revisited.")
@@ -328,6 +343,12 @@ class MuseumFlowTest {
         continueToNextExhibit()
     }
 
+    private fun openCreativeChaos() {
+        openNearOccurrence()
+        solveNearOccurrence()
+        continueToNextExhibit()
+    }
+
     private fun continueToNextExhibit() {
         composeRule
             .onNodeWithText("Continue to next exhibit")
@@ -371,6 +392,24 @@ class MuseumFlowTest {
             .assertIsDisplayed()
     }
 
+    private fun assertFinaleIsDisplayed() {
+        composeRule
+            .onNodeWithText("Museum visit complete")
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithText(
+                "You found every minor mystery. Beyond the final gallery, another city is waiting."
+            )
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithText(
+                "Check out my next game: The City of Strange Kubernetes Clusters."
+            )
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
     private fun solveWorkApparent() {
         listOf(
             "Tasks received",
@@ -405,6 +444,25 @@ class MuseumFlowTest {
 
     private fun solveNearOccurrence() {
         listOf("Advance", "Advance", "Preserve").forEach { action ->
+            composeRule
+                .onNodeWithText(action)
+                .performScrollTo()
+                .performClick()
+        }
+    }
+
+    private fun solveCreativeChaos() {
+        listOf(
+            "Grid — Available",
+            "Sketch — Available",
+            "Combine fragments",
+            "Pattern — Generated",
+            "Code — Available",
+            "Combine fragments",
+            "Motion — Generated",
+            "Note — Available",
+            "Combine fragments"
+        ).forEach { action ->
             composeRule
                 .onNodeWithText(action)
                 .performScrollTo()

@@ -10,6 +10,7 @@ class MuseumGame {
     private val workApparentPuzzle = WorkApparentPuzzle()
     private val simulatedProgressPuzzle = SimulatedProgressPuzzle()
     private val nearOccurrencePuzzle = NearOccurrencePuzzle()
+    private val creativeChaosPuzzle = CreativeChaosPuzzle()
 
     val exhibits = ExhibitCatalog.orderedExhibits
     val orderedExhibitIds = exhibits.map(Exhibit::id)
@@ -32,6 +33,9 @@ class MuseumGame {
     var nearOccurrenceFeedback: NearOccurrenceFeedback? = null
         private set
 
+    var creativeChaosFeedback: CreativeChaosFeedback? = null
+        private set
+
     val reappearingPenProgress: ExhibitProgress
         get() = progressFor(ExhibitIds.REAPPEARING_PEN)
 
@@ -46,6 +50,9 @@ class MuseumGame {
 
     val nearOccurrenceProgress: ExhibitProgress
         get() = progressFor(ExhibitIds.NEAR_OCCURRENCE)
+
+    val creativeChaosProgress: ExhibitProgress
+        get() = progressFor(ExhibitIds.CREATIVE_CHAOS)
 
     val reappearingPenState: ReappearingPenState
         get() = reappearingPenPuzzle.state
@@ -62,12 +69,16 @@ class MuseumGame {
     val nearOccurrenceState: NearOccurrenceState
         get() = nearOccurrencePuzzle.state
 
+    val creativeChaosState: CreativeChaosState
+        get() = creativeChaosPuzzle.state
+
     fun isCompleted(exhibitId: String): Boolean = when (exhibitId) {
         ExhibitIds.REAPPEARING_PEN -> reappearingPenState.solved
         ExhibitIds.SLIGHTLY_WRONG -> slightlyWrongState.solved
         ExhibitIds.WORK_APPARENT -> workApparentState.solved
         ExhibitIds.SIMULATED_PROGRESS -> simulatedProgressState.solved
         ExhibitIds.NEAR_OCCURRENCE -> nearOccurrenceState.solved
+        ExhibitIds.CREATIVE_CHAOS -> creativeChaosState.solved
         else -> error("No completion rule mapped for exhibit ID: $exhibitId")
     }
 
@@ -253,6 +264,49 @@ class MuseumGame {
         return result
     }
 
+    fun toggleCreativeChaosPiece(piece: ChaosPiece): CreativeChaosResult {
+        val result = when {
+            creativeChaosState.solved -> CreativeChaosResult(
+                state = creativeChaosPuzzle.state,
+                feedback = CreativeChaosFeedback.ALREADY_SOLVED
+            )
+
+            !isUnlocked(ExhibitIds.CREATIVE_CHAOS) -> CreativeChaosResult(
+                state = creativeChaosPuzzle.state,
+                feedback = CreativeChaosFeedback.LOCKED
+            )
+
+            else -> creativeChaosPuzzle.toggle(piece)
+        }
+
+        creativeChaosFeedback = result.feedback
+        return result
+    }
+
+    fun combineCreativeChaos(): CreativeChaosResult {
+        val result = when {
+            creativeChaosState.solved -> CreativeChaosResult(
+                state = creativeChaosPuzzle.state,
+                feedback = CreativeChaosFeedback.ALREADY_SOLVED
+            )
+
+            !isUnlocked(ExhibitIds.CREATIVE_CHAOS) -> CreativeChaosResult(
+                state = creativeChaosPuzzle.state,
+                feedback = CreativeChaosFeedback.LOCKED
+            )
+
+            else -> {
+                if (creativeChaosState.selectedPieces.size == 2) {
+                    recordAttempt(ExhibitIds.CREATIVE_CHAOS)
+                }
+                creativeChaosPuzzle.combine()
+            }
+        }
+
+        creativeChaosFeedback = result.feedback
+        return result
+    }
+
     fun restartExhibit(exhibitId: String) {
         val restartIndex = orderedExhibitIds.indexOf(exhibitId)
         if (restartIndex < 0) return
@@ -298,6 +352,11 @@ class MuseumGame {
             ExhibitIds.NEAR_OCCURRENCE -> {
                 nearOccurrencePuzzle.restart()
                 nearOccurrenceFeedback = null
+            }
+
+            ExhibitIds.CREATIVE_CHAOS -> {
+                creativeChaosPuzzle.restart()
+                creativeChaosFeedback = null
             }
 
             else -> error("No restart rule mapped for exhibit ID: $exhibitId")

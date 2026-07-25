@@ -31,6 +31,12 @@ object ExhibitCatalog {
             name = "Near Occurrence",
             description = "A room holds its breath at the boundary before consequence.",
             isAnomaly = true
+        ),
+        Exhibit(
+            id = ExhibitIds.CREATIVE_CHAOS,
+            name = "Creative Chaos",
+            description = "Fragments of structure and imagination wait to become something new.",
+            isAnomaly = true
         )
     )
 }
