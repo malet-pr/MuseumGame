@@ -13,6 +13,12 @@ object ExhibitCatalog {
             name = "Slightly Wrong",
             description = "Familiar details have been remembered almost, but not quite, correctly.",
             isAnomaly = true
+        ),
+        Exhibit(
+            id = ExhibitIds.WORK_APPARENT,
+            name = "Work Apparent",
+            description = "A paper trail produces endless activity while every task returns to the inbox.",
+            isAnomaly = true
         )
     )
 }

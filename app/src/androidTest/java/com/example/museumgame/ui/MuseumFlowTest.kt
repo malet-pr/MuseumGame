@@ -166,6 +166,10 @@ class MuseumFlowTest {
             .onNodeWithText("Locked: Slightly Wrong")
             .assertIsDisplayed()
             .assertIsNotEnabled()
+        composeRule
+            .onNodeWithText("Locked: Work Apparent")
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
         pressBack()
         composeRule.waitForIdle()
 
@@ -191,6 +195,11 @@ class MuseumFlowTest {
             .onNodeWithText("Resume visit")
             .performClick()
         solveSlightlyWrong()
+        composeRule
+            .onNodeWithText("Continue to next exhibit")
+            .performScrollTo()
+            .performClick()
+        solveWorkApparent()
         composeRule
             .onNodeWithText("Complete visit")
             .performScrollTo()
@@ -247,5 +256,21 @@ class MuseumFlowTest {
             .onNodeWithText("Globe")
             .performScrollTo()
             .performClick()
+    }
+
+    private fun solveWorkApparent() {
+        listOf(
+            "Tasks received",
+            "Tasks organized",
+            "Plan and review",
+            "Tasks rearranged",
+            "Return to inbox",
+            "Complete one task"
+        ).forEach { label ->
+            composeRule
+                .onNodeWithText(label)
+                .performScrollTo()
+                .performClick()
+        }
     }
 }

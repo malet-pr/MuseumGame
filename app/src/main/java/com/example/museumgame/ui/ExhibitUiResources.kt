@@ -7,7 +7,8 @@ import com.example.museumgame.model.ExhibitIds
 
 internal enum class ExhibitUiScreen {
     REAPPEARING_PEN,
-    SLIGHTLY_WRONG
+    SLIGHTLY_WRONG,
+    WORK_APPARENT
 }
 
 internal data class ExhibitUiResources(
@@ -30,6 +31,13 @@ internal fun exhibitUiResources(exhibitId: String): ExhibitUiResources = when (e
         nameResource = R.string.slightly_wrong_name,
         illustrationResource = R.drawable.slightly_wrong,
         illustrationDescriptionResource = R.string.slightly_wrong_image_description
+    )
+
+    ExhibitIds.WORK_APPARENT -> ExhibitUiResources(
+        screen = ExhibitUiScreen.WORK_APPARENT,
+        nameResource = R.string.work_apparent_name,
+        illustrationResource = R.drawable.work_apparent,
+        illustrationDescriptionResource = R.string.work_apparent_image_description
     )
 
     else -> error("No UI resources mapped for exhibit ID: $exhibitId")

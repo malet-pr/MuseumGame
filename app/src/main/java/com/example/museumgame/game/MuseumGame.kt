@@ -7,6 +7,7 @@ import com.example.museumgame.model.ExhibitIds
 class MuseumGame {
     private val reappearingPenPuzzle = ReappearingPenPuzzle()
     private val slightlyWrongPuzzle = SlightlyWrongPuzzle()
+    private val workApparentPuzzle = WorkApparentPuzzle()
 
     val exhibits = ExhibitCatalog.orderedExhibits
     val orderedExhibitIds = exhibits.map(Exhibit::id)
@@ -20,11 +21,17 @@ class MuseumGame {
     var slightlyWrongFeedback: SlightlyWrongFeedback? = null
         private set
 
+    var workApparentFeedback: WorkApparentFeedback? = null
+        private set
+
     val reappearingPenProgress: ExhibitProgress
         get() = progressFor(ExhibitIds.REAPPEARING_PEN)
 
     val slightlyWrongProgress: ExhibitProgress
         get() = progressFor(ExhibitIds.SLIGHTLY_WRONG)
+
+    val workApparentProgress: ExhibitProgress
+        get() = progressFor(ExhibitIds.WORK_APPARENT)
 
     val reappearingPenState: ReappearingPenState
         get() = reappearingPenPuzzle.state
@@ -32,9 +39,13 @@ class MuseumGame {
     val slightlyWrongState: SlightlyWrongState
         get() = slightlyWrongPuzzle.state
 
+    val workApparentState: WorkApparentState
+        get() = workApparentPuzzle.state
+
     fun isCompleted(exhibitId: String): Boolean = when (exhibitId) {
         ExhibitIds.REAPPEARING_PEN -> reappearingPenState.solved
         ExhibitIds.SLIGHTLY_WRONG -> slightlyWrongState.solved
+        ExhibitIds.WORK_APPARENT -> workApparentState.solved
         else -> error("No completion rule mapped for exhibit ID: $exhibitId")
     }
 
@@ -106,6 +117,52 @@ class MuseumGame {
         return result
     }
 
+    fun traceWorkApparent(stage: WorkApparentStage): WorkApparentResult {
+        val result = when {
+            workApparentState.solved -> WorkApparentResult(
+                state = workApparentPuzzle.state,
+                feedback = WorkApparentFeedback.ALREADY_SOLVED
+            )
+
+            !isUnlocked(ExhibitIds.WORK_APPARENT) -> WorkApparentResult(
+                state = workApparentPuzzle.state,
+                feedback = WorkApparentFeedback.LOCKED
+            )
+
+            else -> {
+                recordAttempt(ExhibitIds.WORK_APPARENT)
+                workApparentPuzzle.trace(stage)
+            }
+        }
+
+        workApparentFeedback = result.feedback
+        return result
+    }
+
+    fun interruptWorkApparent(
+        interruption: WorkApparentInterruption
+    ): WorkApparentResult {
+        val result = when {
+            workApparentState.solved -> WorkApparentResult(
+                state = workApparentPuzzle.state,
+                feedback = WorkApparentFeedback.ALREADY_SOLVED
+            )
+
+            !isUnlocked(ExhibitIds.WORK_APPARENT) -> WorkApparentResult(
+                state = workApparentPuzzle.state,
+                feedback = WorkApparentFeedback.LOCKED
+            )
+
+            else -> {
+                recordAttempt(ExhibitIds.WORK_APPARENT)
+                workApparentPuzzle.interrupt(interruption)
+            }
+        }
+
+        workApparentFeedback = result.feedback
+        return result
+    }
+
     fun restartExhibit(exhibitId: String) {
         val restartIndex = orderedExhibitIds.indexOf(exhibitId)
         if (restartIndex < 0) return
@@ -136,6 +193,11 @@ class MuseumGame {
             ExhibitIds.SLIGHTLY_WRONG -> {
                 slightlyWrongPuzzle.restart()
                 slightlyWrongFeedback = null
+            }
+
+            ExhibitIds.WORK_APPARENT -> {
+                workApparentPuzzle.restart()
+                workApparentFeedback = null
             }
 
             else -> error("No restart rule mapped for exhibit ID: $exhibitId")

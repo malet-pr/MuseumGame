@@ -2,6 +2,8 @@ package com.example.museumgame.viewmodel
 
 import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.SlightlyWrongDetail
+import com.example.museumgame.game.WorkApparentInterruption
+import com.example.museumgame.game.WorkApparentStage
 import com.example.museumgame.model.ExhibitIds
 
 internal fun MuseumGameViewModel.solveThrough(targetExhibitId: String) {
@@ -28,6 +30,11 @@ internal fun MuseumGameViewModel.solveThrough(targetExhibitId: String) {
                     answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
                     answerSlightlyWrong(SlightlyWrongDetail.BOOKSHELF)
                     answerSlightlyWrong(SlightlyWrongDetail.GLOBE)
+                }
+
+                ExhibitIds.WORK_APPARENT -> {
+                    WorkApparentStage.entries.forEach(::traceWorkApparent)
+                    interruptWorkApparent(WorkApparentInterruption.COMPLETE_ONE_TASK)
                 }
 
                 else -> error("No ViewModel test solver mapped for exhibit ID: $exhibitId")

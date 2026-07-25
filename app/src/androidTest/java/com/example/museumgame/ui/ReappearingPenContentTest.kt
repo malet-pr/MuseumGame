@@ -2,6 +2,7 @@ package com.example.museumgame.ui
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -23,7 +24,7 @@ class ReappearingPenContentTest {
     @Test
     fun inspectionControlsAreVisibleAndTappingOneUpdatesFeedback() {
         composeRule.setContent {
-            var feedback by mutableStateOf<PenInspectionFeedback?>(null)
+            var feedback by remember { mutableStateOf<PenInspectionFeedback?>(null) }
 
             MuseumGameTheme {
                 ReappearingPenContent(

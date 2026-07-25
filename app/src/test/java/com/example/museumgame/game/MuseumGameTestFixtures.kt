@@ -23,6 +23,11 @@ internal fun MuseumGame.solveThrough(targetExhibitId: String) {
                     answerSlightlyWrong(SlightlyWrongDetail.GLOBE)
                 }
 
+                ExhibitIds.WORK_APPARENT -> {
+                    WorkApparentStage.entries.forEach(::traceWorkApparent)
+                    interruptWorkApparent(WorkApparentInterruption.COMPLETE_ONE_TASK)
+                }
+
                 else -> error("No test solver mapped for exhibit ID: $exhibitId")
             }
         }

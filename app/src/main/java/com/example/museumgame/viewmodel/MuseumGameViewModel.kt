@@ -13,6 +13,10 @@ import com.example.museumgame.game.ReappearingPenState
 import com.example.museumgame.game.SlightlyWrongDetail
 import com.example.museumgame.game.SlightlyWrongFeedback
 import com.example.museumgame.game.SlightlyWrongState
+import com.example.museumgame.game.WorkApparentFeedback
+import com.example.museumgame.game.WorkApparentInterruption
+import com.example.museumgame.game.WorkApparentStage
+import com.example.museumgame.game.WorkApparentState
 import com.example.museumgame.model.Exhibit
 import com.example.museumgame.model.ExhibitIds
 
@@ -26,7 +30,8 @@ data class MuseumUiState(
     val exhibits: List<Exhibit>,
     val visitStatuses: List<ExhibitVisitStatus>,
     val reappearingPen: ReappearingPenUiState = ReappearingPenUiState(),
-    val slightlyWrong: SlightlyWrongUiState = SlightlyWrongUiState()
+    val slightlyWrong: SlightlyWrongUiState = SlightlyWrongUiState(),
+    val workApparent: WorkApparentUiState = WorkApparentUiState()
 )
 
 data class ReappearingPenUiState(
@@ -39,6 +44,12 @@ data class SlightlyWrongUiState(
     val progress: ExhibitProgress = ExhibitProgress(),
     val puzzleState: SlightlyWrongState = SlightlyWrongState(),
     val feedback: SlightlyWrongFeedback? = null
+)
+
+data class WorkApparentUiState(
+    val progress: ExhibitProgress = ExhibitProgress(),
+    val puzzleState: WorkApparentState = WorkApparentState(),
+    val feedback: WorkApparentFeedback? = null
 )
 
 class MuseumGameViewModel : ViewModel() {
@@ -101,6 +112,20 @@ class MuseumGameViewModel : ViewModel() {
         refreshDomainState()
     }
 
+    fun traceWorkApparent(stage: WorkApparentStage) {
+        if (!canActIn(ExhibitIds.WORK_APPARENT)) return
+
+        game.traceWorkApparent(stage)
+        refreshDomainState()
+    }
+
+    fun interruptWorkApparent(interruption: WorkApparentInterruption) {
+        if (!canActIn(ExhibitIds.WORK_APPARENT)) return
+
+        game.interruptWorkApparent(interruption)
+        refreshDomainState()
+    }
+
     fun restartCurrentExhibit() {
         val exhibitId =
             (uiState.destination as? MuseumDestination.ExhibitDetail)?.exhibitId
@@ -133,6 +158,11 @@ class MuseumGameViewModel : ViewModel() {
                 progress = game.slightlyWrongProgress,
                 puzzleState = game.slightlyWrongState,
                 feedback = game.slightlyWrongFeedback
+            ),
+            workApparent = WorkApparentUiState(
+                progress = game.workApparentProgress,
+                puzzleState = game.workApparentState,
+                feedback = game.workApparentFeedback
             )
         )
     }

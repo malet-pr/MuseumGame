@@ -70,6 +70,21 @@ fun MuseumScreen(
                 modifier = modifier
             )
 
+            ExhibitUiScreen.WORK_APPARENT -> WorkApparentContent(
+                progress = state.workApparent.progress,
+                puzzleState = state.workApparent.puzzleState,
+                feedback = state.workApparent.feedback,
+                onTrace = viewModel::traceWorkApparent,
+                onInterrupt = viewModel::interruptWorkApparent,
+                onRestart = viewModel::restartCurrentExhibit,
+                onRestartMuseum = requestMuseumRestart,
+                onContinue = viewModel::continueVisit,
+                isFinalExhibit =
+                    state.visitStatuses.lastOrNull()?.exhibitId == destination.exhibitId,
+                onReturnToEntrance = viewModel::returnToEntrance,
+                modifier = modifier
+            )
+
         }
     }
 

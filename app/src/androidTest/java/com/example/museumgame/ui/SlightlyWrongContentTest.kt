@@ -2,6 +2,7 @@ package com.example.museumgame.ui
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -22,7 +23,7 @@ class SlightlyWrongContentTest {
     @Test
     fun answerControlsAreVisibleAndTappingOneUpdatesFeedback() {
         composeRule.setContent {
-            var feedback by mutableStateOf<SlightlyWrongFeedback?>(null)
+            var feedback by remember { mutableStateOf<SlightlyWrongFeedback?>(null) }
 
             MuseumGameTheme {
                 SlightlyWrongContent(

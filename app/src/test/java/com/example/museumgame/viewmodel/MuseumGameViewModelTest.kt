@@ -6,6 +6,10 @@ import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.ReappearingPenState
 import com.example.museumgame.game.SlightlyWrongDetail
 import com.example.museumgame.game.SlightlyWrongState
+import com.example.museumgame.game.WorkApparentFeedback
+import com.example.museumgame.game.WorkApparentInterruption
+import com.example.museumgame.game.WorkApparentStage
+import com.example.museumgame.game.WorkApparentState
 import com.example.museumgame.model.ExhibitIds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -15,13 +19,14 @@ import org.junit.Test
 class MuseumGameViewModelTest {
 
     @Test
-    fun startsAtEntranceWithPenCurrentAndSlightlyWrongLocked() {
+    fun startsAtEntranceWithOnlyPenUnlocked() {
         val viewModel = MuseumGameViewModel()
 
         assertEquals(MuseumDestination.Entrance, viewModel.uiState.destination)
         assertTrue(status(viewModel, ExhibitIds.REAPPEARING_PEN).current)
         assertTrue(status(viewModel, ExhibitIds.REAPPEARING_PEN).unlocked)
         assertFalse(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).unlocked)
+        assertFalse(status(viewModel, ExhibitIds.WORK_APPARENT).unlocked)
     }
 
     @Test
@@ -43,6 +48,19 @@ class MuseumGameViewModelTest {
         viewModel.openExhibit(ExhibitIds.SLIGHTLY_WRONG)
 
         assertEquals(MuseumDestination.Entrance, viewModel.uiState.destination)
+    }
+
+    @Test
+    fun workApparentCannotBeOpenedBeforeSlightlyWrongIsSolved() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
+
+        viewModel.openExhibit(ExhibitIds.WORK_APPARENT)
+
+        assertEquals(
+            MuseumDestination.ExhibitDetail(ExhibitIds.REAPPEARING_PEN),
+            viewModel.uiState.destination
+        )
     }
 
     @Test
@@ -69,6 +87,7 @@ class MuseumGameViewModelTest {
         assertTrue(status(viewModel, ExhibitIds.REAPPEARING_PEN).completed)
         assertTrue(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).unlocked)
         assertTrue(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).current)
+        assertFalse(status(viewModel, ExhibitIds.WORK_APPARENT).unlocked)
         assertEquals(
             MuseumDestination.ExhibitDetail(ExhibitIds.SLIGHTLY_WRONG),
             viewModel.uiState.destination
@@ -105,13 +124,9 @@ class MuseumGameViewModelTest {
     }
 
     @Test
-    fun completingFinalExhibitReturnsToCompletedEntrance() {
+    fun completingWorkApparentReturnsToCompletedEntrance() {
         val viewModel = MuseumGameViewModel()
-        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
-        viewModel.openExhibit(ExhibitIds.SLIGHTLY_WRONG)
-        viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
-        viewModel.answerSlightlyWrong(SlightlyWrongDetail.BOOKSHELF)
-        viewModel.answerSlightlyWrong(SlightlyWrongDetail.GLOBE)
+        viewModel.solveThrough(ExhibitIds.WORK_APPARENT)
 
         viewModel.continueVisit()
 
@@ -121,23 +136,61 @@ class MuseumGameViewModelTest {
     }
 
     @Test
+    fun solvingSlightlyWrongUnlocksAndContinueOpensWorkApparent() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
+
+        viewModel.continueVisit()
+
+        assertTrue(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).completed)
+        assertTrue(status(viewModel, ExhibitIds.WORK_APPARENT).unlocked)
+        assertTrue(status(viewModel, ExhibitIds.WORK_APPARENT).current)
+        assertEquals(
+            MuseumDestination.ExhibitDetail(ExhibitIds.WORK_APPARENT),
+            viewModel.uiState.destination
+        )
+    }
+
+    @Test
+    fun tracingAndInterruptingWorkApparentUpdatesUiState() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
+        viewModel.continueVisit()
+
+        WorkApparentStage.entries.forEach(viewModel::traceWorkApparent)
+        viewModel.interruptWorkApparent(WorkApparentInterruption.COMPLETE_ONE_TASK)
+
+        assertEquals(6, viewModel.uiState.workApparent.progress.attempts)
+        assertTrue(viewModel.uiState.workApparent.puzzleState.solved)
+        assertEquals(
+            WorkApparentFeedback.PUZZLE_SOLVED,
+            viewModel.uiState.workApparent.feedback
+        )
+        assertTrue(status(viewModel, ExhibitIds.WORK_APPARENT).completed)
+    }
+
+    @Test
     fun restartMuseumClearsAllProgressFeedbackAndReturnsToEntrance() {
         val viewModel = MuseumGameViewModel()
-        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
-        viewModel.openExhibit(ExhibitIds.SLIGHTLY_WRONG)
-        viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
+        viewModel.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
+        viewModel.continueVisit()
+        viewModel.traceWorkApparent(WorkApparentStage.TASKS_RECEIVED)
 
         viewModel.restartMuseum()
 
         assertEquals(MuseumDestination.Entrance, viewModel.uiState.destination)
         assertEquals(ExhibitProgress(), viewModel.uiState.reappearingPen.progress)
         assertEquals(ExhibitProgress(), viewModel.uiState.slightlyWrong.progress)
+        assertEquals(ExhibitProgress(), viewModel.uiState.workApparent.progress)
         assertEquals(ReappearingPenState(), viewModel.uiState.reappearingPen.puzzleState)
         assertEquals(SlightlyWrongState(), viewModel.uiState.slightlyWrong.puzzleState)
+        assertEquals(WorkApparentState(), viewModel.uiState.workApparent.puzzleState)
         assertEquals(null, viewModel.uiState.reappearingPen.feedback)
         assertEquals(null, viewModel.uiState.slightlyWrong.feedback)
+        assertEquals(null, viewModel.uiState.workApparent.feedback)
         assertTrue(status(viewModel, ExhibitIds.REAPPEARING_PEN).current)
         assertFalse(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).unlocked)
+        assertFalse(status(viewModel, ExhibitIds.WORK_APPARENT).unlocked)
     }
 
     @Test
@@ -146,9 +199,12 @@ class MuseumGameViewModelTest {
         viewModel.resumeVisit()
 
         viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
+        viewModel.traceWorkApparent(WorkApparentStage.TASKS_RECEIVED)
 
         assertEquals(ExhibitProgress(), viewModel.uiState.slightlyWrong.progress)
         assertEquals(null, viewModel.uiState.slightlyWrong.feedback)
+        assertEquals(ExhibitProgress(), viewModel.uiState.workApparent.progress)
+        assertEquals(null, viewModel.uiState.workApparent.feedback)
 
         viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
         viewModel.continueVisit()
@@ -176,6 +232,7 @@ class MuseumGameViewModelTest {
         )
         assertEquals(ReappearingPenUiState(), viewModel.uiState.reappearingPen)
         assertEquals(SlightlyWrongUiState(), viewModel.uiState.slightlyWrong)
+        assertEquals(WorkApparentUiState(), viewModel.uiState.workApparent)
         assertFalse(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).unlocked)
     }
 
@@ -199,7 +256,42 @@ class MuseumGameViewModelTest {
             viewModel.uiState.reappearingPen.feedback
         )
         assertEquals(SlightlyWrongUiState(), viewModel.uiState.slightlyWrong)
+        assertEquals(WorkApparentUiState(), viewModel.uiState.workApparent)
         assertTrue(status(viewModel, ExhibitIds.REAPPEARING_PEN).completed)
+    }
+
+    @Test
+    fun restartingSlightlyWrongAfterWorkProgressAlsoResetsWork() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
+        viewModel.continueVisit()
+        viewModel.traceWorkApparent(WorkApparentStage.TASKS_RECEIVED)
+        viewModel.returnToEntrance()
+        viewModel.openExhibit(ExhibitIds.SLIGHTLY_WRONG)
+
+        viewModel.restartCurrentExhibit()
+
+        assertEquals(SlightlyWrongUiState(), viewModel.uiState.slightlyWrong)
+        assertEquals(WorkApparentUiState(), viewModel.uiState.workApparent)
+        assertFalse(status(viewModel, ExhibitIds.WORK_APPARENT).unlocked)
+    }
+
+    @Test
+    fun restartingWorkApparentPreservesEarlierCompletedExhibits() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
+        viewModel.continueVisit()
+        viewModel.traceWorkApparent(WorkApparentStage.TASKS_RECEIVED)
+
+        viewModel.restartCurrentExhibit()
+
+        assertTrue(viewModel.uiState.reappearingPen.puzzleState.solved)
+        assertTrue(viewModel.uiState.slightlyWrong.puzzleState.solved)
+        assertEquals(WorkApparentUiState(), viewModel.uiState.workApparent)
+        assertEquals(
+            MuseumDestination.ExhibitDetail(ExhibitIds.WORK_APPARENT),
+            viewModel.uiState.destination
+        )
     }
 
     @Test
