@@ -1,9 +1,18 @@
 package com.example.museumgame.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.museumgame.R
 import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.viewmodel.MuseumDestination
 import com.example.museumgame.viewmodel.MuseumGameViewModel
@@ -14,6 +23,8 @@ fun MuseumScreen(
     viewModel: MuseumGameViewModel = viewModel()
 ) {
     val state = viewModel.uiState
+    var showRestartMuseumConfirmation by rememberSaveable { mutableStateOf(false) }
+    val requestMuseumRestart = { showRestartMuseumConfirmation = true }
 
     BackHandler(enabled = state.destination is MuseumDestination.ExhibitDetail) {
         viewModel.returnToEntrance()
@@ -25,7 +36,7 @@ fun MuseumScreen(
             visitStatuses = state.visitStatuses,
             onResumeVisit = viewModel::resumeVisit,
             onOpenExhibit = viewModel::openExhibit,
-            onRestartMuseum = viewModel::restartMuseum,
+            onRestartMuseum = requestMuseumRestart,
             modifier = modifier
         )
 
@@ -36,7 +47,7 @@ fun MuseumScreen(
                 feedback = state.reappearingPen.feedback,
                 onInspectLocation = viewModel::inspectReappearingPen,
                 onRestart = viewModel::restartCurrentExhibit,
-                onRestartMuseum = viewModel::restartMuseum,
+                onRestartMuseum = requestMuseumRestart,
                 onContinue = viewModel::continueVisit,
                 isFinalExhibit =
                     state.visitStatuses.lastOrNull()?.exhibitId == destination.exhibitId,
@@ -50,7 +61,7 @@ fun MuseumScreen(
                 feedback = state.slightlyWrong.feedback,
                 onAnswer = viewModel::answerSlightlyWrong,
                 onRestart = viewModel::restartCurrentExhibit,
-                onRestartMuseum = viewModel::restartMuseum,
+                onRestartMuseum = requestMuseumRestart,
                 onContinue = viewModel::continueVisit,
                 isFinalExhibit =
                     state.visitStatuses.lastOrNull()?.exhibitId == destination.exhibitId,
@@ -60,5 +71,34 @@ fun MuseumScreen(
 
             else -> error("No screen mapped for exhibit ID: ${destination.exhibitId}")
         }
+    }
+
+    if (showRestartMuseumConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showRestartMuseumConfirmation = false },
+            title = {
+                Text(stringResource(R.string.restart_museum_confirmation_title))
+            },
+            text = {
+                Text(stringResource(R.string.restart_museum_confirmation_message))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRestartMuseumConfirmation = false
+                        viewModel.restartMuseum()
+                    }
+                ) {
+                    Text(stringResource(R.string.restart_museum_confirmation_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showRestartMuseumConfirmation = false }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }

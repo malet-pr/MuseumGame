@@ -43,22 +43,8 @@ data class SlightlyWrongUiState(
 
 class MuseumGameViewModel : ViewModel() {
 
-    private val exhibits = listOf(
-        Exhibit(
-            id = ExhibitIds.REAPPEARING_PEN,
-            name = "The Reappearing Pen",
-            description = "The pen vanishes from its case, then quietly reappears. You found the anomaly!",
-            isAnomaly = true
-        ),
-        Exhibit(
-            id = ExhibitIds.SLIGHTLY_WRONG,
-            name = "Slightly Wrong",
-            description = "Familiar details have been remembered almost, but not quite, correctly.",
-            isAnomaly = true
-        )
-    )
-
-    private val game = MuseumGame(exhibits)
+    private val game = MuseumGame()
+    private val exhibits = game.exhibits
 
     var uiState by mutableStateOf(
         MuseumUiState(
@@ -102,70 +88,79 @@ class MuseumGameViewModel : ViewModel() {
     }
 
     fun inspectReappearingPen(location: PenLocation) {
+        if (!canActIn(ExhibitIds.REAPPEARING_PEN)) return
+
         val result = game.inspectReappearingPen(location)
-        uiState = uiState.copy(
-            reappearingPen = uiState.reappearingPen.copy(
-                progress = game.reappearingPenProgress,
-                puzzleState = result.state,
-                feedback = result.feedback
-            ),
-            visitStatuses = game.visitStatuses()
+        refreshDomainState(
+            reappearingPenFeedback = result.feedback
         )
     }
 
     fun answerSlightlyWrong(detail: SlightlyWrongDetail) {
+        if (!canActIn(ExhibitIds.SLIGHTLY_WRONG)) return
+
         val result = game.answerSlightlyWrong(detail)
-        uiState = uiState.copy(
-            slightlyWrong = uiState.slightlyWrong.copy(
-                progress = game.slightlyWrongProgress,
-                puzzleState = result.state,
-                feedback = result.feedback
-            ),
-            visitStatuses = game.visitStatuses()
+        refreshDomainState(
+            slightlyWrongFeedback = result.feedback
         )
     }
 
     fun restartCurrentExhibit() {
-        when ((uiState.destination as? MuseumDestination.ExhibitDetail)?.exhibitId) {
-            ExhibitIds.REAPPEARING_PEN -> {
-                game.restartReappearingPen()
-                uiState = uiState.copy(
-                    reappearingPen = ReappearingPenUiState(
-                        progress = game.reappearingPenProgress,
-                        puzzleState = game.reappearingPenState
-                    ),
-                    visitStatuses = game.visitStatuses()
-                )
-            }
+        val exhibitId =
+            (uiState.destination as? MuseumDestination.ExhibitDetail)?.exhibitId
+                ?: return
+        if (!game.isUnlocked(exhibitId)) return
 
-            ExhibitIds.SLIGHTLY_WRONG -> {
-                game.restartSlightlyWrong()
-                uiState = uiState.copy(
-                    slightlyWrong = SlightlyWrongUiState(
-                        progress = game.slightlyWrongProgress,
-                        puzzleState = game.slightlyWrongState
-                    ),
-                    visitStatuses = game.visitStatuses()
-                )
+        game.restartExhibit(exhibitId)
+        val restartIndex = game.orderedExhibitIds.indexOf(exhibitId)
+        refreshDomainState(
+            reappearingPenFeedback = if (
+                game.orderedExhibitIds.indexOf(ExhibitIds.REAPPEARING_PEN) >= restartIndex
+            ) {
+                null
+            } else {
+                uiState.reappearingPen.feedback
+            },
+            slightlyWrongFeedback = if (
+                game.orderedExhibitIds.indexOf(ExhibitIds.SLIGHTLY_WRONG) >= restartIndex
+            ) {
+                null
+            } else {
+                uiState.slightlyWrong.feedback
             }
-
-            else -> Unit
-        }
+        )
     }
 
     fun restartMuseum() {
         game.restartMuseum()
-        uiState = MuseumUiState(
+        refreshDomainState(
             destination = MuseumDestination.Entrance,
-            exhibits = exhibits,
+            reappearingPenFeedback = null,
+            slightlyWrongFeedback = null
+        )
+    }
+
+    private fun canActIn(exhibitId: String): Boolean =
+        uiState.destination == MuseumDestination.ExhibitDetail(exhibitId) &&
+            game.isUnlocked(exhibitId)
+
+    private fun refreshDomainState(
+        destination: MuseumDestination = uiState.destination,
+        reappearingPenFeedback: PenInspectionFeedback? = uiState.reappearingPen.feedback,
+        slightlyWrongFeedback: SlightlyWrongFeedback? = uiState.slightlyWrong.feedback
+    ) {
+        uiState = uiState.copy(
+            destination = destination,
             visitStatuses = game.visitStatuses(),
             reappearingPen = ReappearingPenUiState(
                 progress = game.reappearingPenProgress,
-                puzzleState = game.reappearingPenState
+                puzzleState = game.reappearingPenState,
+                feedback = reappearingPenFeedback
             ),
             slightlyWrong = SlightlyWrongUiState(
                 progress = game.slightlyWrongProgress,
-                puzzleState = game.slightlyWrongState
+                puzzleState = game.slightlyWrongState,
+                feedback = slightlyWrongFeedback
             )
         )
     }

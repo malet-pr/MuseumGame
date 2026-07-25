@@ -14,6 +14,7 @@ enum class SlightlyWrongClue {
 }
 
 enum class SlightlyWrongFeedback {
+    LOCKED,
     INCORRECT,
     CORRECT_NEXT_CLUE,
     PUZZLE_SOLVED,

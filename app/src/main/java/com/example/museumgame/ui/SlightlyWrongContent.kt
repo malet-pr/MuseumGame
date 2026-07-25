@@ -74,7 +74,7 @@ fun SlightlyWrongContent(
             }
         }
         Button(onClick = onRestart) {
-            Text(stringResource(R.string.restart))
+            Text(stringResource(R.string.restart_exhibit))
         }
         Button(onClick = onRestartMuseum) {
             Text(stringResource(R.string.restart_museum))
@@ -126,6 +126,7 @@ private fun slightlyWrongClueResource(clue: SlightlyWrongClue): Int = when (clue
 @StringRes
 private fun slightlyWrongFeedbackResource(feedback: SlightlyWrongFeedback?): Int = when (feedback) {
     null -> R.string.slightly_wrong_instructions
+    SlightlyWrongFeedback.LOCKED -> R.string.exhibit_locked
     SlightlyWrongFeedback.INCORRECT -> R.string.slightly_wrong_feedback_incorrect
     SlightlyWrongFeedback.CORRECT_NEXT_CLUE -> R.string.slightly_wrong_feedback_correct
     SlightlyWrongFeedback.PUZZLE_SOLVED -> R.string.slightly_wrong_feedback_solved

@@ -71,7 +71,7 @@ fun ReappearingPenContent(
             }
         }
         Button(onClick = onRestart) {
-            Text(stringResource(R.string.restart))
+            Text(stringResource(R.string.restart_exhibit))
         }
         Button(onClick = onRestartMuseum) {
             Text(stringResource(R.string.restart_museum))

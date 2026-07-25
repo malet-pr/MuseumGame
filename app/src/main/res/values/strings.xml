@@ -10,6 +10,10 @@
     <string name="continue_visit">Continue to next exhibit</string>
     <string name="complete_visit">Complete visit</string>
     <string name="restart_museum">Restart museum</string>
+    <string name="restart_museum_confirmation_title">Restart museum?</string>
+    <string name="restart_museum_confirmation_message">All exhibit progress and attempts will be cleared, and you will return to the museum entrance.</string>
+    <string name="restart_museum_confirmation_confirm">Clear progress and restart</string>
+    <string name="cancel">Cancel</string>
     <string name="reappearing_pen_name">The Reappearing Pen</string>
     <string name="reappearing_pen_image_description">A six-panel museum illustration showing a pen vanishing from papers and reappearing on a filing cabinet.</string>
     <string name="slightly_wrong_name">Slightly Wrong</string>
@@ -41,8 +45,9 @@
     <string name="pen_feedback_found">The pen is back! You found the anomaly.</string>
     <string name="pen_reappeared_hint">The pen has reappeared in a previously checked location.</string>
     <string name="exhibit_already_solved">This exhibit is already solved.</string>
+    <string name="exhibit_locked">This exhibit is locked. Complete the previous exhibit first.</string>
     <string name="inspections">Inspections: %1$d</string>
     <string name="exhibit_solved">You solved the exhibit in %1$d inspections.</string>
-    <string name="restart">Restart</string>
+    <string name="restart_exhibit">Restart exhibit</string>
     <string name="return_to_entrance">Back to museum entrance</string>
 </resources>

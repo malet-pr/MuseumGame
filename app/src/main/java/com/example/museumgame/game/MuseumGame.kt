@@ -1,18 +1,15 @@
 package com.example.museumgame.game
 
 import com.example.museumgame.model.Exhibit
+import com.example.museumgame.model.ExhibitCatalog
 import com.example.museumgame.model.ExhibitIds
 
-class MuseumGame(
-    val exhibits: List<Exhibit>
-) {
+class MuseumGame {
     private val reappearingPenPuzzle = ReappearingPenPuzzle()
     private val slightlyWrongPuzzle = SlightlyWrongPuzzle()
 
-    val orderedExhibitIds = listOf(
-        ExhibitIds.REAPPEARING_PEN,
-        ExhibitIds.SLIGHTLY_WRONG
-    )
+    val exhibits = ExhibitCatalog.orderedExhibits
+    val orderedExhibitIds = exhibits.map(Exhibit::id)
 
     var reappearingPenProgress = ExhibitProgress()
         private set
@@ -81,6 +78,12 @@ class MuseumGame(
                 feedback = SlightlyWrongFeedback.ALREADY_SOLVED
             )
         }
+        if (!isUnlocked(ExhibitIds.SLIGHTLY_WRONG)) {
+            return SlightlyWrongResult(
+                state = slightlyWrongPuzzle.state,
+                feedback = SlightlyWrongFeedback.LOCKED
+            )
+        }
 
         val result = slightlyWrongPuzzle.answer(detail)
         slightlyWrongProgress = ExhibitProgress(
@@ -89,18 +92,26 @@ class MuseumGame(
         return result
     }
 
-    fun restartReappearingPen() {
-        reappearingPenProgress = ExhibitProgress()
-        reappearingPenPuzzle.restart()
-    }
+    fun restartExhibit(exhibitId: String) {
+        val restartIndex = orderedExhibitIds.indexOf(exhibitId)
+        if (restartIndex < 0) return
 
-    fun restartSlightlyWrong() {
-        slightlyWrongProgress = ExhibitProgress()
-        slightlyWrongPuzzle.restart()
+        orderedExhibitIds.drop(restartIndex).forEach { id ->
+            when (id) {
+                ExhibitIds.REAPPEARING_PEN -> {
+                    reappearingPenProgress = ExhibitProgress()
+                    reappearingPenPuzzle.restart()
+                }
+
+                ExhibitIds.SLIGHTLY_WRONG -> {
+                    slightlyWrongProgress = ExhibitProgress()
+                    slightlyWrongPuzzle.restart()
+                }
+            }
+        }
     }
 
     fun restartMuseum() {
-        restartReappearingPen()
-        restartSlightlyWrong()
+        orderedExhibitIds.firstOrNull()?.let(::restartExhibit)
     }
 }

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.example.museumgame.R
 import com.example.museumgame.game.ExhibitVisitStatus
 import com.example.museumgame.model.Exhibit
+import com.example.museumgame.model.ExhibitCatalog
 import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.ui.theme.MuseumGameTheme
 
@@ -170,21 +171,6 @@ private fun EntranceVisitActions(
     }
 }
 
-private val previewExhibits = listOf(
-    Exhibit(
-        id = ExhibitIds.REAPPEARING_PEN,
-        name = "The Reappearing Pen",
-        description = "The pen reappeared.",
-        isAnomaly = true
-    ),
-    Exhibit(
-        id = ExhibitIds.SLIGHTLY_WRONG,
-        name = "Slightly Wrong",
-        description = "Familiar details are almost correct.",
-        isAnomaly = true
-    )
-)
-
 private val previewVisitStatuses = listOf(
     ExhibitVisitStatus(
         exhibitId = ExhibitIds.REAPPEARING_PEN,
@@ -205,7 +191,7 @@ private val previewVisitStatuses = listOf(
 private fun MuseumEntrancePortraitPreview() {
     MuseumGameTheme {
         MuseumEntranceContent(
-            exhibits = previewExhibits,
+            exhibits = ExhibitCatalog.orderedExhibits,
             visitStatuses = previewVisitStatuses,
             onResumeVisit = {},
             onOpenExhibit = {},
@@ -219,7 +205,7 @@ private fun MuseumEntrancePortraitPreview() {
 private fun MuseumEntranceLandscapePreview() {
     MuseumGameTheme {
         MuseumEntranceContent(
-            exhibits = previewExhibits,
+            exhibits = ExhibitCatalog.orderedExhibits,
             visitStatuses = previewVisitStatuses,
             onResumeVisit = {},
             onOpenExhibit = {},
