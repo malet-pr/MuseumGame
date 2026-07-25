@@ -36,6 +36,12 @@ internal fun MuseumGame.solveThrough(targetExhibitId: String) {
                     )
                 }
 
+                ExhibitIds.NEAR_OCCURRENCE -> {
+                    advanceNearOccurrence()
+                    advanceNearOccurrence()
+                    preserveNearOccurrence()
+                }
+
                 else -> error("No test solver mapped for exhibit ID: $exhibitId")
             }
         }

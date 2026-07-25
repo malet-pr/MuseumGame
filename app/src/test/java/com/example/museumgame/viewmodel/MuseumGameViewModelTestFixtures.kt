@@ -44,6 +44,12 @@ internal fun MuseumGameViewModel.solveThrough(targetExhibitId: String) {
                     )
                 }
 
+                ExhibitIds.NEAR_OCCURRENCE -> {
+                    advanceNearOccurrence()
+                    advanceNearOccurrence()
+                    preserveNearOccurrence()
+                }
+
                 else -> error("No ViewModel test solver mapped for exhibit ID: $exhibitId")
             }
         }

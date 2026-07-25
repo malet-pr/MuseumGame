@@ -25,6 +25,12 @@ object ExhibitCatalog {
             name = "Simulated Progress",
             description = "A busy workshop confuses effort and deliverables with meaningful change.",
             isAnomaly = true
+        ),
+        Exhibit(
+            id = ExhibitIds.NEAR_OCCURRENCE,
+            name = "Near Occurrence",
+            description = "A room holds its breath at the boundary before consequence.",
+            isAnomaly = true
         )
     )
 }

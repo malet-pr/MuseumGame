@@ -99,6 +99,21 @@ fun MuseumScreen(
                 modifier = modifier
             )
 
+            ExhibitUiScreen.NEAR_OCCURRENCE -> NearOccurrenceContent(
+                progress = state.nearOccurrence.progress,
+                puzzleState = state.nearOccurrence.puzzleState,
+                feedback = state.nearOccurrence.feedback,
+                onAdvance = viewModel::advanceNearOccurrence,
+                onPreserve = viewModel::preserveNearOccurrence,
+                onRestart = viewModel::restartCurrentExhibit,
+                onRestartMuseum = requestMuseumRestart,
+                onContinue = viewModel::continueVisit,
+                isFinalExhibit =
+                    state.visitStatuses.lastOrNull()?.exhibitId == destination.exhibitId,
+                onReturnToEntrance = viewModel::returnToEntrance,
+                modifier = modifier
+            )
+
         }
     }
 

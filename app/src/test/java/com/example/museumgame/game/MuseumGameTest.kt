@@ -23,6 +23,7 @@ class MuseumGameTest {
         assertEquals(0, game.slightlyWrongProgress.attempts)
         assertEquals(0, game.workApparentProgress.attempts)
         assertEquals(0, game.simulatedProgressProgress.attempts)
+        assertEquals(0, game.nearOccurrenceProgress.attempts)
     }
 
     @Test
@@ -52,6 +53,7 @@ class MuseumGameTest {
         assertEquals(3, game.reappearingPenProgress.attempts)
         assertEquals(0, game.workApparentProgress.attempts)
         assertEquals(0, game.simulatedProgressProgress.attempts)
+        assertEquals(0, game.nearOccurrenceProgress.attempts)
     }
 
     @Test
@@ -185,6 +187,60 @@ class MuseumGameTest {
     }
 
     @Test
+    fun nearOccurrenceCannotAdvanceBeforeSimulatedProgressCompletion() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.WORK_APPARENT)
+
+        val advance = game.advanceNearOccurrence()
+        val preserve = game.preserveNearOccurrence()
+
+        assertEquals(NearOccurrenceFeedback.LOCKED, advance.feedback)
+        assertEquals(NearOccurrenceFeedback.LOCKED, preserve.feedback)
+        assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
+        assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
+        assertFalse(game.isCompleted(ExhibitIds.NEAR_OCCURRENCE))
+    }
+
+    @Test
+    fun nearOccurrenceChoicesCountAndThresholdPreserveSolvesIt() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+
+        game.advanceNearOccurrence()
+        game.advanceNearOccurrence()
+        val result = game.preserveNearOccurrence()
+
+        assertEquals(3, game.nearOccurrenceProgress.attempts)
+        assertTrue(game.nearOccurrenceState.solved)
+        assertEquals(NearOccurrenceFeedback.PUZZLE_SOLVED, result.feedback)
+    }
+
+    @Test
+    fun nearOccurrenceOverAdvanceCountsAndResetsItsState() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+
+        game.advanceNearOccurrence()
+        game.advanceNearOccurrence()
+        val result = game.advanceNearOccurrence()
+
+        assertEquals(3, game.nearOccurrenceProgress.attempts)
+        assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
+        assertEquals(NearOccurrenceFeedback.SPILL_RESET, result.feedback)
+    }
+
+    @Test
+    fun nearOccurrenceChoiceAfterSolvedDoesNotIncreaseAttempts() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.NEAR_OCCURRENCE)
+
+        val result = game.advanceNearOccurrence()
+
+        assertEquals(3, game.nearOccurrenceProgress.attempts)
+        assertEquals(NearOccurrenceFeedback.ALREADY_SOLVED, result.feedback)
+    }
+
+    @Test
     fun restartingPenAfterSlightlyWrongProgressResetsBothExhibits() {
         val game = newGame()
         game.solveThrough(ExhibitIds.REAPPEARING_PEN)
@@ -200,10 +256,13 @@ class MuseumGameTest {
         assertEquals(WorkApparentState(), game.workApparentState)
         assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
         assertEquals(SimulatedProgressState(), game.simulatedProgressState)
+        assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
+        assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
         assertNull(game.reappearingPenFeedback)
         assertNull(game.slightlyWrongFeedback)
         assertNull(game.workApparentFeedback)
         assertNull(game.simulatedProgressFeedback)
+        assertNull(game.nearOccurrenceFeedback)
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
     }
 
@@ -244,8 +303,8 @@ class MuseumGameTest {
     @Test
     fun restartingWorkApparentAfterSimulatedProgressResetsBothAndPreservesEarlierExhibits() {
         val game = newGame()
-        game.solveThrough(ExhibitIds.WORK_APPARENT)
-        game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        game.advanceNearOccurrence()
 
         game.restartExhibit(ExhibitIds.WORK_APPARENT)
 
@@ -257,16 +316,19 @@ class MuseumGameTest {
         assertEquals(WorkApparentState(), game.workApparentState)
         assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
         assertEquals(SimulatedProgressState(), game.simulatedProgressState)
+        assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
+        assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
         assertNull(game.workApparentFeedback)
         assertNull(game.simulatedProgressFeedback)
+        assertNull(game.nearOccurrenceFeedback)
         assertTrue(game.isUnlocked(ExhibitIds.WORK_APPARENT))
     }
 
     @Test
     fun restartingSimulatedProgressPreservesEarlierExhibits() {
         val game = newGame()
-        game.solveThrough(ExhibitIds.WORK_APPARENT)
-        game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        game.advanceNearOccurrence()
 
         game.restartExhibit(ExhibitIds.SIMULATED_PROGRESS)
 
@@ -275,8 +337,30 @@ class MuseumGameTest {
         assertTrue(game.workApparentState.solved)
         assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
         assertEquals(SimulatedProgressState(), game.simulatedProgressState)
+        assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
+        assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
         assertNull(game.simulatedProgressFeedback)
+        assertNull(game.nearOccurrenceFeedback)
         assertTrue(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
+        assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
+    }
+
+    @Test
+    fun restartingNearOccurrencePreservesEveryEarlierExhibit() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        game.advanceNearOccurrence()
+
+        game.restartExhibit(ExhibitIds.NEAR_OCCURRENCE)
+
+        assertTrue(game.reappearingPenState.solved)
+        assertTrue(game.slightlyWrongState.solved)
+        assertTrue(game.workApparentState.solved)
+        assertTrue(game.simulatedProgressState.solved)
+        assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
+        assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
+        assertNull(game.nearOccurrenceFeedback)
+        assertTrue(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
     }
 
     @Test
@@ -288,9 +372,14 @@ class MuseumGameTest {
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
         assertFalse(game.isUnlocked(ExhibitIds.WORK_APPARENT))
         assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
+        assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
         assertEquals(
             ExhibitIds.SLIGHTLY_WRONG,
             game.nextExhibitId(ExhibitIds.REAPPEARING_PEN)
+        )
+        assertEquals(
+            ExhibitIds.NEAR_OCCURRENCE,
+            game.nextExhibitId(ExhibitIds.SIMULATED_PROGRESS)
         )
     }
 
@@ -303,6 +392,7 @@ class MuseumGameTest {
         assertTrue(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
         assertFalse(game.isUnlocked(ExhibitIds.WORK_APPARENT))
         assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
+        assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
         assertTrue(game.visitStatuses().first { it.exhibitId == ExhibitIds.REAPPEARING_PEN }.completed)
     }
 
@@ -328,13 +418,27 @@ class MuseumGameTest {
             game.firstUnfinishedExhibitId()
         )
         assertTrue(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
+        assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
+    }
+
+    @Test
+    fun solvingSimulatedProgressUnlocksNearOccurrenceAndMakesItCurrent() {
+        val game = newGame()
+
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+
+        assertEquals(
+            ExhibitIds.NEAR_OCCURRENCE,
+            game.firstUnfinishedExhibitId()
+        )
+        assertTrue(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
     }
 
     @Test
     fun restartMuseumClearsEveryPuzzleAndRestoresInitialProgression() {
         val game = newGame()
-        game.solveThrough(ExhibitIds.WORK_APPARENT)
-        game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        game.advanceNearOccurrence()
 
         game.restartMuseum()
 
@@ -342,18 +446,22 @@ class MuseumGameTest {
         assertEquals(ExhibitProgress(), game.slightlyWrongProgress)
         assertEquals(ExhibitProgress(), game.workApparentProgress)
         assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
+        assertEquals(ExhibitProgress(), game.nearOccurrenceProgress)
         assertEquals(ReappearingPenState(), game.reappearingPenState)
         assertEquals(SlightlyWrongState(), game.slightlyWrongState)
         assertEquals(WorkApparentState(), game.workApparentState)
         assertEquals(SimulatedProgressState(), game.simulatedProgressState)
+        assertEquals(NearOccurrenceState(), game.nearOccurrenceState)
         assertNull(game.reappearingPenFeedback)
         assertNull(game.slightlyWrongFeedback)
         assertNull(game.workApparentFeedback)
         assertNull(game.simulatedProgressFeedback)
+        assertNull(game.nearOccurrenceFeedback)
         assertEquals(ExhibitIds.REAPPEARING_PEN, game.firstUnfinishedExhibitId())
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
         assertFalse(game.isUnlocked(ExhibitIds.WORK_APPARENT))
         assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
+        assertFalse(game.isUnlocked(ExhibitIds.NEAR_OCCURRENCE))
     }
 
     @Test
@@ -367,6 +475,8 @@ class MuseumGameTest {
         assertNoCompletedLockedState(game)
         game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
         assertNoCompletedLockedState(game)
+        game.advanceNearOccurrence()
+        assertNoCompletedLockedState(game)
         game.solveThrough(ExhibitIds.REAPPEARING_PEN)
         assertNoCompletedLockedState(game)
         game.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
@@ -374,6 +484,10 @@ class MuseumGameTest {
         game.solveThrough(ExhibitIds.WORK_APPARENT)
         assertNoCompletedLockedState(game)
         game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        assertNoCompletedLockedState(game)
+        game.solveThrough(ExhibitIds.NEAR_OCCURRENCE)
+        assertNoCompletedLockedState(game)
+        game.restartExhibit(ExhibitIds.NEAR_OCCURRENCE)
         assertNoCompletedLockedState(game)
         game.restartExhibit(ExhibitIds.SIMULATED_PROGRESS)
         assertNoCompletedLockedState(game)

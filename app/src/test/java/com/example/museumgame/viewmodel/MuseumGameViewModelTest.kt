@@ -1,6 +1,9 @@
 package com.example.museumgame.viewmodel
 
 import com.example.museumgame.game.ExhibitProgress
+import com.example.museumgame.game.NearOccurrenceFeedback
+import com.example.museumgame.game.NearOccurrenceStage
+import com.example.museumgame.game.NearOccurrenceState
 import com.example.museumgame.game.PenInspectionFeedback
 import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.ProgressCategory
@@ -33,6 +36,7 @@ class MuseumGameViewModelTest {
         assertFalse(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).unlocked)
         assertFalse(status(viewModel, ExhibitIds.WORK_APPARENT).unlocked)
         assertFalse(status(viewModel, ExhibitIds.SIMULATED_PROGRESS).unlocked)
+        assertFalse(status(viewModel, ExhibitIds.NEAR_OCCURRENCE).unlocked)
     }
 
     @Test
@@ -83,6 +87,19 @@ class MuseumGameViewModelTest {
     }
 
     @Test
+    fun nearOccurrenceCannotBeOpenedBeforeSimulatedProgressIsSolved() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.WORK_APPARENT)
+
+        viewModel.openExhibit(ExhibitIds.NEAR_OCCURRENCE)
+
+        assertEquals(
+            MuseumDestination.ExhibitDetail(ExhibitIds.WORK_APPARENT),
+            viewModel.uiState.destination
+        )
+    }
+
+    @Test
     fun continueDoesNothingUntilCurrentExhibitIsSolved() {
         val viewModel = MuseumGameViewModel()
         viewModel.resumeVisit()
@@ -108,6 +125,7 @@ class MuseumGameViewModelTest {
         assertTrue(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).current)
         assertFalse(status(viewModel, ExhibitIds.WORK_APPARENT).unlocked)
         assertFalse(status(viewModel, ExhibitIds.SIMULATED_PROGRESS).unlocked)
+        assertFalse(status(viewModel, ExhibitIds.NEAR_OCCURRENCE).unlocked)
         assertEquals(
             MuseumDestination.ExhibitDetail(ExhibitIds.SLIGHTLY_WRONG),
             viewModel.uiState.destination
@@ -144,9 +162,25 @@ class MuseumGameViewModelTest {
     }
 
     @Test
-    fun completingSimulatedProgressReturnsToCompletedEntrance() {
+    fun solvingSimulatedProgressUnlocksAndContinueOpensNearOccurrence() {
         val viewModel = MuseumGameViewModel()
         viewModel.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+
+        viewModel.continueVisit()
+
+        assertTrue(status(viewModel, ExhibitIds.SIMULATED_PROGRESS).completed)
+        assertTrue(status(viewModel, ExhibitIds.NEAR_OCCURRENCE).unlocked)
+        assertTrue(status(viewModel, ExhibitIds.NEAR_OCCURRENCE).current)
+        assertEquals(
+            MuseumDestination.ExhibitDetail(ExhibitIds.NEAR_OCCURRENCE),
+            viewModel.uiState.destination
+        )
+    }
+
+    @Test
+    fun completingNearOccurrenceReturnsToCompletedEntrance() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.NEAR_OCCURRENCE)
 
         viewModel.continueVisit()
 
@@ -225,11 +259,59 @@ class MuseumGameViewModelTest {
     }
 
     @Test
+    fun advancingAndPreservingNearOccurrenceUpdatesUiState() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        viewModel.continueVisit()
+
+        viewModel.advanceNearOccurrence()
+        viewModel.advanceNearOccurrence()
+        viewModel.preserveNearOccurrence()
+
+        assertEquals(3, viewModel.uiState.nearOccurrence.progress.attempts)
+        assertEquals(
+            NearOccurrenceStage.AT_THRESHOLD,
+            viewModel.uiState.nearOccurrence.puzzleState.stage
+        )
+        assertTrue(viewModel.uiState.nearOccurrence.puzzleState.solved)
+        assertEquals(
+            NearOccurrenceFeedback.PUZZLE_SOLVED,
+            viewModel.uiState.nearOccurrence.feedback
+        )
+        assertTrue(status(viewModel, ExhibitIds.NEAR_OCCURRENCE).completed)
+    }
+
+    @Test
+    fun returningToEntrancePreservesNearOccurrenceStageAndAttempts() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        viewModel.continueVisit()
+        viewModel.advanceNearOccurrence()
+
+        viewModel.returnToEntrance()
+        viewModel.resumeVisit()
+
+        assertEquals(
+            MuseumDestination.ExhibitDetail(ExhibitIds.NEAR_OCCURRENCE),
+            viewModel.uiState.destination
+        )
+        assertEquals(1, viewModel.uiState.nearOccurrence.progress.attempts)
+        assertEquals(
+            NearOccurrenceStage.SHIFTING,
+            viewModel.uiState.nearOccurrence.puzzleState.stage
+        )
+        assertEquals(
+            NearOccurrenceFeedback.SHIFTING,
+            viewModel.uiState.nearOccurrence.feedback
+        )
+    }
+
+    @Test
     fun restartMuseumClearsAllProgressFeedbackAndReturnsToEntrance() {
         val viewModel = MuseumGameViewModel()
-        viewModel.solveThrough(ExhibitIds.WORK_APPARENT)
+        viewModel.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
         viewModel.continueVisit()
-        viewModel.classifySimulatedProgress(ProgressCategory.ACTIVITY)
+        viewModel.advanceNearOccurrence()
 
         viewModel.restartMuseum()
 
@@ -238,6 +320,7 @@ class MuseumGameViewModelTest {
         assertEquals(ExhibitProgress(), viewModel.uiState.slightlyWrong.progress)
         assertEquals(ExhibitProgress(), viewModel.uiState.workApparent.progress)
         assertEquals(ExhibitProgress(), viewModel.uiState.simulatedProgress.progress)
+        assertEquals(ExhibitProgress(), viewModel.uiState.nearOccurrence.progress)
         assertEquals(ReappearingPenState(), viewModel.uiState.reappearingPen.puzzleState)
         assertEquals(SlightlyWrongState(), viewModel.uiState.slightlyWrong.puzzleState)
         assertEquals(WorkApparentState(), viewModel.uiState.workApparent.puzzleState)
@@ -245,14 +328,20 @@ class MuseumGameViewModelTest {
             SimulatedProgressState(),
             viewModel.uiState.simulatedProgress.puzzleState
         )
+        assertEquals(
+            NearOccurrenceState(),
+            viewModel.uiState.nearOccurrence.puzzleState
+        )
         assertEquals(null, viewModel.uiState.reappearingPen.feedback)
         assertEquals(null, viewModel.uiState.slightlyWrong.feedback)
         assertEquals(null, viewModel.uiState.workApparent.feedback)
         assertEquals(null, viewModel.uiState.simulatedProgress.feedback)
+        assertEquals(null, viewModel.uiState.nearOccurrence.feedback)
         assertTrue(status(viewModel, ExhibitIds.REAPPEARING_PEN).current)
         assertFalse(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).unlocked)
         assertFalse(status(viewModel, ExhibitIds.WORK_APPARENT).unlocked)
         assertFalse(status(viewModel, ExhibitIds.SIMULATED_PROGRESS).unlocked)
+        assertFalse(status(viewModel, ExhibitIds.NEAR_OCCURRENCE).unlocked)
     }
 
     @Test
@@ -263,6 +352,7 @@ class MuseumGameViewModelTest {
         viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
         viewModel.traceWorkApparent(WorkApparentStage.TASKS_RECEIVED)
         viewModel.classifySimulatedProgress(ProgressCategory.ACTIVITY)
+        viewModel.advanceNearOccurrence()
 
         assertEquals(ExhibitProgress(), viewModel.uiState.slightlyWrong.progress)
         assertEquals(null, viewModel.uiState.slightlyWrong.feedback)
@@ -270,6 +360,8 @@ class MuseumGameViewModelTest {
         assertEquals(null, viewModel.uiState.workApparent.feedback)
         assertEquals(ExhibitProgress(), viewModel.uiState.simulatedProgress.progress)
         assertEquals(null, viewModel.uiState.simulatedProgress.feedback)
+        assertEquals(ExhibitProgress(), viewModel.uiState.nearOccurrence.progress)
+        assertEquals(null, viewModel.uiState.nearOccurrence.feedback)
 
         viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
         viewModel.continueVisit()
@@ -299,6 +391,7 @@ class MuseumGameViewModelTest {
         assertEquals(SlightlyWrongUiState(), viewModel.uiState.slightlyWrong)
         assertEquals(WorkApparentUiState(), viewModel.uiState.workApparent)
         assertEquals(SimulatedProgressUiState(), viewModel.uiState.simulatedProgress)
+        assertEquals(NearOccurrenceUiState(), viewModel.uiState.nearOccurrence)
         assertFalse(status(viewModel, ExhibitIds.SLIGHTLY_WRONG).unlocked)
     }
 
@@ -324,6 +417,7 @@ class MuseumGameViewModelTest {
         assertEquals(SlightlyWrongUiState(), viewModel.uiState.slightlyWrong)
         assertEquals(WorkApparentUiState(), viewModel.uiState.workApparent)
         assertEquals(SimulatedProgressUiState(), viewModel.uiState.simulatedProgress)
+        assertEquals(NearOccurrenceUiState(), viewModel.uiState.nearOccurrence)
         assertTrue(status(viewModel, ExhibitIds.REAPPEARING_PEN).completed)
     }
 
@@ -341,6 +435,7 @@ class MuseumGameViewModelTest {
         assertEquals(SlightlyWrongUiState(), viewModel.uiState.slightlyWrong)
         assertEquals(WorkApparentUiState(), viewModel.uiState.workApparent)
         assertEquals(SimulatedProgressUiState(), viewModel.uiState.simulatedProgress)
+        assertEquals(NearOccurrenceUiState(), viewModel.uiState.nearOccurrence)
         assertFalse(status(viewModel, ExhibitIds.WORK_APPARENT).unlocked)
     }
 
@@ -359,6 +454,7 @@ class MuseumGameViewModelTest {
         assertTrue(viewModel.uiState.slightlyWrong.puzzleState.solved)
         assertEquals(WorkApparentUiState(), viewModel.uiState.workApparent)
         assertEquals(SimulatedProgressUiState(), viewModel.uiState.simulatedProgress)
+        assertEquals(NearOccurrenceUiState(), viewModel.uiState.nearOccurrence)
         assertEquals(
             MuseumDestination.ExhibitDetail(ExhibitIds.WORK_APPARENT),
             viewModel.uiState.destination
@@ -380,6 +476,46 @@ class MuseumGameViewModelTest {
         assertEquals(SimulatedProgressUiState(), viewModel.uiState.simulatedProgress)
         assertEquals(
             MuseumDestination.ExhibitDetail(ExhibitIds.SIMULATED_PROGRESS),
+            viewModel.uiState.destination
+        )
+    }
+
+    @Test
+    fun restartingSimulatedProgressAfterNearOccurrenceProgressResetsBoth() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        viewModel.continueVisit()
+        viewModel.advanceNearOccurrence()
+        viewModel.returnToEntrance()
+        viewModel.openExhibit(ExhibitIds.SIMULATED_PROGRESS)
+
+        viewModel.restartCurrentExhibit()
+
+        assertEquals(SimulatedProgressUiState(), viewModel.uiState.simulatedProgress)
+        assertEquals(NearOccurrenceUiState(), viewModel.uiState.nearOccurrence)
+        assertEquals(
+            MuseumDestination.ExhibitDetail(ExhibitIds.SIMULATED_PROGRESS),
+            viewModel.uiState.destination
+        )
+        assertFalse(status(viewModel, ExhibitIds.NEAR_OCCURRENCE).unlocked)
+    }
+
+    @Test
+    fun restartingNearOccurrencePreservesEarlierCompletedExhibits() {
+        val viewModel = MuseumGameViewModel()
+        viewModel.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        viewModel.continueVisit()
+        viewModel.advanceNearOccurrence()
+
+        viewModel.restartCurrentExhibit()
+
+        assertTrue(viewModel.uiState.reappearingPen.puzzleState.solved)
+        assertTrue(viewModel.uiState.slightlyWrong.puzzleState.solved)
+        assertTrue(viewModel.uiState.workApparent.puzzleState.solved)
+        assertTrue(viewModel.uiState.simulatedProgress.puzzleState.solved)
+        assertEquals(NearOccurrenceUiState(), viewModel.uiState.nearOccurrence)
+        assertEquals(
+            MuseumDestination.ExhibitDetail(ExhibitIds.NEAR_OCCURRENCE),
             viewModel.uiState.destination
         )
     }

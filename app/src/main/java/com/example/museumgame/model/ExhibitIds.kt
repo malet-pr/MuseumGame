@@ -5,4 +5,5 @@ object ExhibitIds {
     const val SLIGHTLY_WRONG = "slightly_wrong"
     const val WORK_APPARENT = "work_apparent"
     const val SIMULATED_PROGRESS = "simulated_progress"
+    const val NEAR_OCCURRENCE = "near_occurrence"
 }

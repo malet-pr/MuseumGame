@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import com.example.museumgame.game.ExhibitProgress
 import com.example.museumgame.game.ExhibitVisitStatus
 import com.example.museumgame.game.MuseumGame
+import com.example.museumgame.game.NearOccurrenceFeedback
+import com.example.museumgame.game.NearOccurrenceState
 import com.example.museumgame.game.PenInspectionFeedback
 import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.ProgressCategory
@@ -35,7 +37,8 @@ data class MuseumUiState(
     val reappearingPen: ReappearingPenUiState = ReappearingPenUiState(),
     val slightlyWrong: SlightlyWrongUiState = SlightlyWrongUiState(),
     val workApparent: WorkApparentUiState = WorkApparentUiState(),
-    val simulatedProgress: SimulatedProgressUiState = SimulatedProgressUiState()
+    val simulatedProgress: SimulatedProgressUiState = SimulatedProgressUiState(),
+    val nearOccurrence: NearOccurrenceUiState = NearOccurrenceUiState()
 )
 
 data class ReappearingPenUiState(
@@ -60,6 +63,12 @@ data class SimulatedProgressUiState(
     val progress: ExhibitProgress = ExhibitProgress(),
     val puzzleState: SimulatedProgressState = SimulatedProgressState(),
     val feedback: SimulatedProgressFeedback? = null
+)
+
+data class NearOccurrenceUiState(
+    val progress: ExhibitProgress = ExhibitProgress(),
+    val puzzleState: NearOccurrenceState = NearOccurrenceState(),
+    val feedback: NearOccurrenceFeedback? = null
 )
 
 class MuseumGameViewModel : ViewModel() {
@@ -143,6 +152,20 @@ class MuseumGameViewModel : ViewModel() {
         refreshDomainState()
     }
 
+    fun advanceNearOccurrence() {
+        if (!canActIn(ExhibitIds.NEAR_OCCURRENCE)) return
+
+        game.advanceNearOccurrence()
+        refreshDomainState()
+    }
+
+    fun preserveNearOccurrence() {
+        if (!canActIn(ExhibitIds.NEAR_OCCURRENCE)) return
+
+        game.preserveNearOccurrence()
+        refreshDomainState()
+    }
+
     fun restartCurrentExhibit() {
         val exhibitId =
             (uiState.destination as? MuseumDestination.ExhibitDetail)?.exhibitId
@@ -185,6 +208,11 @@ class MuseumGameViewModel : ViewModel() {
                 progress = game.simulatedProgressProgress,
                 puzzleState = game.simulatedProgressState,
                 feedback = game.simulatedProgressFeedback
+            ),
+            nearOccurrence = NearOccurrenceUiState(
+                progress = game.nearOccurrenceProgress,
+                puzzleState = game.nearOccurrenceState,
+                feedback = game.nearOccurrenceFeedback
             )
         )
     }

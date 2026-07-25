@@ -9,7 +9,8 @@ internal enum class ExhibitUiScreen {
     REAPPEARING_PEN,
     SLIGHTLY_WRONG,
     WORK_APPARENT,
-    SIMULATED_PROGRESS
+    SIMULATED_PROGRESS,
+    NEAR_OCCURRENCE
 }
 
 internal data class ExhibitUiResources(
@@ -46,6 +47,13 @@ internal fun exhibitUiResources(exhibitId: String): ExhibitUiResources = when (e
         nameResource = R.string.simulated_progress_name,
         illustrationResource = R.drawable.simulate_progress,
         illustrationDescriptionResource = R.string.simulated_progress_image_description
+    )
+
+    ExhibitIds.NEAR_OCCURRENCE -> ExhibitUiResources(
+        screen = ExhibitUiScreen.NEAR_OCCURRENCE,
+        nameResource = R.string.near_occurrence_name,
+        illustrationResource = R.drawable.near_occurrence,
+        illustrationDescriptionResource = R.string.near_occurrence_image_description
     )
 
     else -> error("No UI resources mapped for exhibit ID: $exhibitId")

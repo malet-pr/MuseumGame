@@ -177,6 +177,11 @@ class MuseumFlowTest {
             .performScrollTo()
             .assertIsDisplayed()
             .assertIsNotEnabled()
+        composeRule
+            .onNodeWithText("Locked: Near Occurrence")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
     }
 
     @Test
@@ -207,8 +212,8 @@ class MuseumFlowTest {
 
     @Test
     fun completeMuseumJourneySmokeTest() {
-        openSimulatedProgress()
-        solveSimulatedProgress()
+        openNearOccurrence()
+        solveNearOccurrence()
         composeRule
             .onNodeWithText("Complete visit")
             .performScrollTo()
@@ -221,6 +226,25 @@ class MuseumFlowTest {
         composeRule
             .onAllNodesWithText("Resume visit")
             .assertCountEquals(0)
+    }
+
+    @Test
+    fun recreationPreservesNearOccurrenceDestinationAndStage() {
+        openNearOccurrence()
+        composeRule
+            .onNodeWithText("Advance")
+            .performScrollTo()
+            .performClick()
+
+        assertFirstNearOccurrenceAdvance()
+
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitForIdle()
+
+        composeRule
+            .onNodeWithText("Near Occurrence")
+            .assertIsDisplayed()
+        assertFirstNearOccurrenceAdvance()
     }
 
     @Test
@@ -298,6 +322,12 @@ class MuseumFlowTest {
         continueToNextExhibit()
     }
 
+    private fun openNearOccurrence() {
+        openSimulatedProgress()
+        solveSimulatedProgress()
+        continueToNextExhibit()
+    }
+
     private fun continueToNextExhibit() {
         composeRule
             .onNodeWithText("Continue to next exhibit")
@@ -322,6 +352,21 @@ class MuseumFlowTest {
             .assertIsDisplayed()
         composeRule
             .onNodeWithText("A revised workflow guide is now available to the team.")
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    private fun assertFirstNearOccurrenceAdvance() {
+        composeRule
+            .onNodeWithText("Current moment: Shifting")
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithText("The cup edges toward the table’s rim.")
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithText("Choices: 1")
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -353,6 +398,15 @@ class MuseumFlowTest {
         ).forEach { category ->
             composeRule
                 .onNodeWithText(category)
+                .performScrollTo()
+                .performClick()
+        }
+    }
+
+    private fun solveNearOccurrence() {
+        listOf("Advance", "Advance", "Preserve").forEach { action ->
+            composeRule
+                .onNodeWithText(action)
                 .performScrollTo()
                 .performClick()
         }

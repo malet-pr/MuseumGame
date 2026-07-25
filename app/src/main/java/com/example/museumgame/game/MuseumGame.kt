@@ -9,6 +9,7 @@ class MuseumGame {
     private val slightlyWrongPuzzle = SlightlyWrongPuzzle()
     private val workApparentPuzzle = WorkApparentPuzzle()
     private val simulatedProgressPuzzle = SimulatedProgressPuzzle()
+    private val nearOccurrencePuzzle = NearOccurrencePuzzle()
 
     val exhibits = ExhibitCatalog.orderedExhibits
     val orderedExhibitIds = exhibits.map(Exhibit::id)
@@ -28,6 +29,9 @@ class MuseumGame {
     var simulatedProgressFeedback: SimulatedProgressFeedback? = null
         private set
 
+    var nearOccurrenceFeedback: NearOccurrenceFeedback? = null
+        private set
+
     val reappearingPenProgress: ExhibitProgress
         get() = progressFor(ExhibitIds.REAPPEARING_PEN)
 
@@ -39,6 +43,9 @@ class MuseumGame {
 
     val simulatedProgressProgress: ExhibitProgress
         get() = progressFor(ExhibitIds.SIMULATED_PROGRESS)
+
+    val nearOccurrenceProgress: ExhibitProgress
+        get() = progressFor(ExhibitIds.NEAR_OCCURRENCE)
 
     val reappearingPenState: ReappearingPenState
         get() = reappearingPenPuzzle.state
@@ -52,11 +59,15 @@ class MuseumGame {
     val simulatedProgressState: SimulatedProgressState
         get() = simulatedProgressPuzzle.state
 
+    val nearOccurrenceState: NearOccurrenceState
+        get() = nearOccurrencePuzzle.state
+
     fun isCompleted(exhibitId: String): Boolean = when (exhibitId) {
         ExhibitIds.REAPPEARING_PEN -> reappearingPenState.solved
         ExhibitIds.SLIGHTLY_WRONG -> slightlyWrongState.solved
         ExhibitIds.WORK_APPARENT -> workApparentState.solved
         ExhibitIds.SIMULATED_PROGRESS -> simulatedProgressState.solved
+        ExhibitIds.NEAR_OCCURRENCE -> nearOccurrenceState.solved
         else -> error("No completion rule mapped for exhibit ID: $exhibitId")
     }
 
@@ -198,6 +209,50 @@ class MuseumGame {
         return result
     }
 
+    fun advanceNearOccurrence(): NearOccurrenceResult {
+        val result = when {
+            nearOccurrenceState.solved -> NearOccurrenceResult(
+                state = nearOccurrencePuzzle.state,
+                feedback = NearOccurrenceFeedback.ALREADY_SOLVED
+            )
+
+            !isUnlocked(ExhibitIds.NEAR_OCCURRENCE) -> NearOccurrenceResult(
+                state = nearOccurrencePuzzle.state,
+                feedback = NearOccurrenceFeedback.LOCKED
+            )
+
+            else -> {
+                recordAttempt(ExhibitIds.NEAR_OCCURRENCE)
+                nearOccurrencePuzzle.advance()
+            }
+        }
+
+        nearOccurrenceFeedback = result.feedback
+        return result
+    }
+
+    fun preserveNearOccurrence(): NearOccurrenceResult {
+        val result = when {
+            nearOccurrenceState.solved -> NearOccurrenceResult(
+                state = nearOccurrencePuzzle.state,
+                feedback = NearOccurrenceFeedback.ALREADY_SOLVED
+            )
+
+            !isUnlocked(ExhibitIds.NEAR_OCCURRENCE) -> NearOccurrenceResult(
+                state = nearOccurrencePuzzle.state,
+                feedback = NearOccurrenceFeedback.LOCKED
+            )
+
+            else -> {
+                recordAttempt(ExhibitIds.NEAR_OCCURRENCE)
+                nearOccurrencePuzzle.preserve()
+            }
+        }
+
+        nearOccurrenceFeedback = result.feedback
+        return result
+    }
+
     fun restartExhibit(exhibitId: String) {
         val restartIndex = orderedExhibitIds.indexOf(exhibitId)
         if (restartIndex < 0) return
@@ -238,6 +293,11 @@ class MuseumGame {
             ExhibitIds.SIMULATED_PROGRESS -> {
                 simulatedProgressPuzzle.restart()
                 simulatedProgressFeedback = null
+            }
+
+            ExhibitIds.NEAR_OCCURRENCE -> {
+                nearOccurrencePuzzle.restart()
+                nearOccurrenceFeedback = null
             }
 
             else -> error("No restart rule mapped for exhibit ID: $exhibitId")
