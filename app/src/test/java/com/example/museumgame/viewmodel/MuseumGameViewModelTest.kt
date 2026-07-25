@@ -62,7 +62,7 @@ class MuseumGameViewModelTest {
     fun solvingPenUnlocksAndContinueOpensSlightlyWrong() {
         val viewModel = MuseumGameViewModel()
         viewModel.resumeVisit()
-        solvePen(viewModel)
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
 
         viewModel.continueVisit()
 
@@ -79,7 +79,7 @@ class MuseumGameViewModelTest {
     fun returningToEntrancePreservesProgressAndResumeUsesFirstUnfinished() {
         val viewModel = MuseumGameViewModel()
         viewModel.resumeVisit()
-        solvePen(viewModel)
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
 
         viewModel.returnToEntrance()
         viewModel.resumeVisit()
@@ -94,7 +94,7 @@ class MuseumGameViewModelTest {
     @Test
     fun completedExhibitCanBeRevisited() {
         val viewModel = MuseumGameViewModel()
-        solvePen(viewModel)
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
 
         viewModel.openExhibit(ExhibitIds.REAPPEARING_PEN)
 
@@ -107,7 +107,7 @@ class MuseumGameViewModelTest {
     @Test
     fun completingFinalExhibitReturnsToCompletedEntrance() {
         val viewModel = MuseumGameViewModel()
-        solvePen(viewModel)
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
         viewModel.openExhibit(ExhibitIds.SLIGHTLY_WRONG)
         viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
         viewModel.answerSlightlyWrong(SlightlyWrongDetail.BOOKSHELF)
@@ -123,7 +123,7 @@ class MuseumGameViewModelTest {
     @Test
     fun restartMuseumClearsAllProgressFeedbackAndReturnsToEntrance() {
         val viewModel = MuseumGameViewModel()
-        solvePen(viewModel)
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
         viewModel.openExhibit(ExhibitIds.SLIGHTLY_WRONG)
         viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
 
@@ -150,7 +150,7 @@ class MuseumGameViewModelTest {
         assertEquals(ExhibitProgress(), viewModel.uiState.slightlyWrong.progress)
         assertEquals(null, viewModel.uiState.slightlyWrong.feedback)
 
-        solvePen(viewModel)
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
         viewModel.continueVisit()
         val solvedPenState = viewModel.uiState.reappearingPen
 
@@ -162,7 +162,7 @@ class MuseumGameViewModelTest {
     @Test
     fun restartingPenAfterSlightlyWrongProgressResetsBothAndStaysInPen() {
         val viewModel = MuseumGameViewModel()
-        solvePen(viewModel)
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
         viewModel.continueVisit()
         viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
         viewModel.returnToEntrance()
@@ -182,7 +182,7 @@ class MuseumGameViewModelTest {
     @Test
     fun restartingSlightlyWrongPreservesCompletedPenAndStaysInSlightlyWrong() {
         val viewModel = MuseumGameViewModel()
-        solvePen(viewModel)
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
         viewModel.continueVisit()
         viewModel.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
 
@@ -205,7 +205,7 @@ class MuseumGameViewModelTest {
     @Test
     fun solvedPuzzleReturnsExplicitAlreadySolvedFeedbackWithoutAnotherAttempt() {
         val viewModel = MuseumGameViewModel()
-        solvePen(viewModel)
+        viewModel.solveThrough(ExhibitIds.REAPPEARING_PEN)
 
         viewModel.inspectReappearingPen(PenLocation.FILING_CABINET)
 
@@ -234,13 +234,6 @@ class MuseumGameViewModelTest {
                 viewModel.uiState.reappearingPen.feedback
             )
         }
-    }
-
-    private fun solvePen(viewModel: MuseumGameViewModel) {
-        viewModel.openExhibit(ExhibitIds.REAPPEARING_PEN)
-        viewModel.inspectReappearingPen(PenLocation.PAPERS)
-        viewModel.inspectReappearingPen(PenLocation.EMPTY_DESK)
-        viewModel.inspectReappearingPen(PenLocation.PAPERS)
     }
 
     private fun status(viewModel: MuseumGameViewModel, exhibitId: String) =

@@ -20,6 +20,7 @@ import com.example.museumgame.game.ExhibitProgress
 import com.example.museumgame.game.PenInspectionFeedback
 import com.example.museumgame.game.PenLocation
 import com.example.museumgame.game.ReappearingPenState
+import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.ui.theme.MuseumGameTheme
 
 @Composable
@@ -35,10 +36,11 @@ fun ReappearingPenContent(
     onReturnToEntrance: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val resources = exhibitUiResources(ExhibitIds.REAPPEARING_PEN)
     ResponsiveExhibitLayout(
-        titleResource = R.string.reappearing_pen_name,
-        illustrationResource = R.drawable.pen_reappears,
-        illustrationDescriptionResource = R.string.reappearing_pen_image_description,
+        titleResource = resources.nameResource,
+        illustrationResource = resources.illustrationResource,
+        illustrationDescriptionResource = resources.illustrationDescriptionResource,
         modifier = modifier
     ) {
         Text(
@@ -58,27 +60,15 @@ fun ReappearingPenContent(
         }
         if (puzzleState.solved) {
             Text(stringResource(R.string.exhibit_solved, progress.attempts))
-            Button(onClick = onContinue) {
-                Text(
-                    stringResource(
-                        if (isFinalExhibit) {
-                            R.string.complete_visit
-                        } else {
-                            R.string.continue_visit
-                        }
-                    )
-                )
-            }
         }
-        Button(onClick = onRestart) {
-            Text(stringResource(R.string.restart_exhibit))
-        }
-        Button(onClick = onRestartMuseum) {
-            Text(stringResource(R.string.restart_museum))
-        }
-        Button(onClick = onReturnToEntrance) {
-            Text(stringResource(R.string.return_to_entrance))
-        }
+        ExhibitNavigationActions(
+            solved = puzzleState.solved,
+            isFinalExhibit = isFinalExhibit,
+            onContinue = onContinue,
+            onRestartExhibit = onRestart,
+            onRestartMuseum = onRestartMuseum,
+            onReturnToEntrance = onReturnToEntrance
+        )
     }
 }
 

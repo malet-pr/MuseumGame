@@ -3,6 +3,7 @@ package com.example.museumgame.game
 import com.example.museumgame.model.ExhibitIds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -37,7 +38,7 @@ class MuseumGameTest {
     @Test
     fun slightlyWrongAnswersIncrementOnlyItsAttemptsAndSolveInOrder() {
         val game = newGame()
-        solvePen(game)
+        game.solveThrough(ExhibitIds.REAPPEARING_PEN)
 
         game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
         game.answerSlightlyWrong(SlightlyWrongDetail.BOOKSHELF)
@@ -51,7 +52,7 @@ class MuseumGameTest {
     @Test
     fun wrongSlightlyWrongAnswerCountsWithoutAdvancing() {
         val game = newGame()
-        solvePen(game)
+        game.solveThrough(ExhibitIds.REAPPEARING_PEN)
 
         val result = game.answerSlightlyWrong(SlightlyWrongDetail.ORRERY)
 
@@ -64,7 +65,7 @@ class MuseumGameTest {
     @Test
     fun answerAfterSlightlyWrongSolvedDoesNotIncreaseAttempts() {
         val game = newGame()
-        solvePen(game)
+        game.solveThrough(ExhibitIds.REAPPEARING_PEN)
         game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
         game.answerSlightlyWrong(SlightlyWrongDetail.BOOKSHELF)
         game.answerSlightlyWrong(SlightlyWrongDetail.GLOBE)
@@ -90,7 +91,7 @@ class MuseumGameTest {
     @Test
     fun restartingPenAfterSlightlyWrongProgressResetsBothExhibits() {
         val game = newGame()
-        solvePen(game)
+        game.solveThrough(ExhibitIds.REAPPEARING_PEN)
         game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
 
         game.restartExhibit(ExhibitIds.REAPPEARING_PEN)
@@ -99,13 +100,15 @@ class MuseumGameTest {
         assertEquals(ReappearingPenState(), game.reappearingPenState)
         assertEquals(ExhibitProgress(), game.slightlyWrongProgress)
         assertEquals(SlightlyWrongState(), game.slightlyWrongState)
+        assertNull(game.reappearingPenFeedback)
+        assertNull(game.slightlyWrongFeedback)
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
     }
 
     @Test
     fun restartingSlightlyWrongDoesNotResetPen() {
         val game = newGame()
-        solvePen(game)
+        game.solveThrough(ExhibitIds.REAPPEARING_PEN)
         game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
 
         game.restartExhibit(ExhibitIds.SLIGHTLY_WRONG)
@@ -114,6 +117,8 @@ class MuseumGameTest {
         assertEquals(SlightlyWrongState(), game.slightlyWrongState)
         assertEquals(3, game.reappearingPenProgress.attempts)
         assertTrue(game.reappearingPenState.solved)
+        assertEquals(PenInspectionFeedback.PEN_FOUND, game.reappearingPenFeedback)
+        assertNull(game.slightlyWrongFeedback)
         assertTrue(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
     }
 
@@ -133,7 +138,7 @@ class MuseumGameTest {
     @Test
     fun solvingPenUnlocksSlightlyWrongAndMakesItCurrent() {
         val game = newGame()
-        solvePen(game)
+        game.solveThrough(ExhibitIds.REAPPEARING_PEN)
 
         assertEquals(ExhibitIds.SLIGHTLY_WRONG, game.firstUnfinishedExhibitId())
         assertTrue(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
@@ -143,7 +148,7 @@ class MuseumGameTest {
     @Test
     fun restartMuseumClearsBothPuzzlesAndRestoresInitialProgression() {
         val game = newGame()
-        solvePen(game)
+        game.solveThrough(ExhibitIds.REAPPEARING_PEN)
         game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
 
         game.restartMuseum()
@@ -152,6 +157,8 @@ class MuseumGameTest {
         assertEquals(ExhibitProgress(), game.slightlyWrongProgress)
         assertEquals(ReappearingPenState(), game.reappearingPenState)
         assertEquals(SlightlyWrongState(), game.slightlyWrongState)
+        assertNull(game.reappearingPenFeedback)
+        assertNull(game.slightlyWrongFeedback)
         assertEquals(ExhibitIds.REAPPEARING_PEN, game.firstUnfinishedExhibitId())
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
     }
@@ -163,9 +170,9 @@ class MuseumGameTest {
         assertNoCompletedLockedState(game)
         game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
         assertNoCompletedLockedState(game)
-        solvePen(game)
+        game.solveThrough(ExhibitIds.REAPPEARING_PEN)
         assertNoCompletedLockedState(game)
-        solveSlightlyWrong(game)
+        game.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
         assertNoCompletedLockedState(game)
         game.restartExhibit(ExhibitIds.SLIGHTLY_WRONG)
         assertNoCompletedLockedState(game)
@@ -174,18 +181,6 @@ class MuseumGameTest {
     }
 
     private fun newGame() = MuseumGame()
-
-    private fun solvePen(game: MuseumGame) {
-        game.inspectReappearingPen(PenLocation.PAPERS)
-        game.inspectReappearingPen(PenLocation.EMPTY_DESK)
-        game.inspectReappearingPen(PenLocation.PAPERS)
-    }
-
-    private fun solveSlightlyWrong(game: MuseumGame) {
-        game.answerSlightlyWrong(SlightlyWrongDetail.CLOCK)
-        game.answerSlightlyWrong(SlightlyWrongDetail.BOOKSHELF)
-        game.answerSlightlyWrong(SlightlyWrongDetail.GLOBE)
-    }
 
     private fun assertNoCompletedLockedState(game: MuseumGame) {
         assertTrue(game.visitStatuses().none { it.completed && !it.unlocked })

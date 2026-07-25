@@ -10,12 +10,21 @@ class MuseumGame {
 
     val exhibits = ExhibitCatalog.orderedExhibits
     val orderedExhibitIds = exhibits.map(Exhibit::id)
+    private val attemptsByExhibitId = orderedExhibitIds
+        .associateWith { 0 }
+        .toMutableMap()
 
-    var reappearingPenProgress = ExhibitProgress()
+    var reappearingPenFeedback: PenInspectionFeedback? = null
         private set
 
-    var slightlyWrongProgress = ExhibitProgress()
+    var slightlyWrongFeedback: SlightlyWrongFeedback? = null
         private set
+
+    val reappearingPenProgress: ExhibitProgress
+        get() = progressFor(ExhibitIds.REAPPEARING_PEN)
+
+    val slightlyWrongProgress: ExhibitProgress
+        get() = progressFor(ExhibitIds.SLIGHTLY_WRONG)
 
     val reappearingPenState: ReappearingPenState
         get() = reappearingPenPuzzle.state
@@ -26,8 +35,14 @@ class MuseumGame {
     fun isCompleted(exhibitId: String): Boolean = when (exhibitId) {
         ExhibitIds.REAPPEARING_PEN -> reappearingPenState.solved
         ExhibitIds.SLIGHTLY_WRONG -> slightlyWrongState.solved
-        else -> false
+        else -> error("No completion rule mapped for exhibit ID: $exhibitId")
     }
+
+    fun progressFor(exhibitId: String): ExhibitProgress =
+        ExhibitProgress(
+            attempts = attemptsByExhibitId[exhibitId]
+                ?: error("No attempt counter mapped for exhibit ID: $exhibitId")
+        )
 
     fun firstUnfinishedExhibitId(): String? =
         orderedExhibitIds.firstOrNull { !isCompleted(it) }
@@ -57,38 +72,37 @@ class MuseumGame {
     }
 
     fun inspectReappearingPen(location: PenLocation): PenInspectionResult {
-        if (reappearingPenState.solved) {
-            return PenInspectionResult(
+        val result = if (reappearingPenState.solved) {
+            PenInspectionResult(
                 state = reappearingPenPuzzle.state,
                 feedback = PenInspectionFeedback.ALREADY_SOLVED
             )
+        } else {
+            recordAttempt(ExhibitIds.REAPPEARING_PEN)
+            reappearingPenPuzzle.inspect(location)
         }
 
-        val result = reappearingPenPuzzle.inspect(location)
-        reappearingPenProgress = ExhibitProgress(
-            attempts = reappearingPenProgress.attempts + 1
-        )
+        reappearingPenFeedback = result.feedback
         return result
     }
 
     fun answerSlightlyWrong(detail: SlightlyWrongDetail): SlightlyWrongResult {
-        if (slightlyWrongState.solved) {
-            return SlightlyWrongResult(
+        val result = if (slightlyWrongState.solved) {
+            SlightlyWrongResult(
                 state = slightlyWrongPuzzle.state,
                 feedback = SlightlyWrongFeedback.ALREADY_SOLVED
             )
-        }
-        if (!isUnlocked(ExhibitIds.SLIGHTLY_WRONG)) {
-            return SlightlyWrongResult(
+        } else if (!isUnlocked(ExhibitIds.SLIGHTLY_WRONG)) {
+            SlightlyWrongResult(
                 state = slightlyWrongPuzzle.state,
                 feedback = SlightlyWrongFeedback.LOCKED
             )
+        } else {
+            recordAttempt(ExhibitIds.SLIGHTLY_WRONG)
+            slightlyWrongPuzzle.answer(detail)
         }
 
-        val result = slightlyWrongPuzzle.answer(detail)
-        slightlyWrongProgress = ExhibitProgress(
-            attempts = slightlyWrongProgress.attempts + 1
-        )
+        slightlyWrongFeedback = result.feedback
         return result
     }
 
@@ -97,21 +111,34 @@ class MuseumGame {
         if (restartIndex < 0) return
 
         orderedExhibitIds.drop(restartIndex).forEach { id ->
-            when (id) {
-                ExhibitIds.REAPPEARING_PEN -> {
-                    reappearingPenProgress = ExhibitProgress()
-                    reappearingPenPuzzle.restart()
-                }
-
-                ExhibitIds.SLIGHTLY_WRONG -> {
-                    slightlyWrongProgress = ExhibitProgress()
-                    slightlyWrongPuzzle.restart()
-                }
-            }
+            attemptsByExhibitId[id] = 0
+            resetPuzzle(id)
         }
     }
 
     fun restartMuseum() {
         orderedExhibitIds.firstOrNull()?.let(::restartExhibit)
+    }
+
+    private fun recordAttempt(exhibitId: String) {
+        attemptsByExhibitId[exhibitId] =
+            (attemptsByExhibitId[exhibitId]
+                ?: error("No attempt counter mapped for exhibit ID: $exhibitId")) + 1
+    }
+
+    private fun resetPuzzle(exhibitId: String) {
+        when (exhibitId) {
+            ExhibitIds.REAPPEARING_PEN -> {
+                reappearingPenPuzzle.restart()
+                reappearingPenFeedback = null
+            }
+
+            ExhibitIds.SLIGHTLY_WRONG -> {
+                slightlyWrongPuzzle.restart()
+                slightlyWrongFeedback = null
+            }
+
+            else -> error("No restart rule mapped for exhibit ID: $exhibitId")
+        }
     }
 }

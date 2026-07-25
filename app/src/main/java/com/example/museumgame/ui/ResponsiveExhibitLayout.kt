@@ -24,8 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.example.museumgame.R
-import com.example.museumgame.model.ExhibitIds
 
 @Composable
 internal fun ResponsiveExhibitLayout(
@@ -109,13 +107,6 @@ private fun ExhibitIllustration(
         modifier = modifier,
         contentScale = ContentScale.Fit
     )
-}
-
-@StringRes
-internal fun exhibitNameResource(exhibitId: String): Int = when (exhibitId) {
-    ExhibitIds.REAPPEARING_PEN -> R.string.reappearing_pen_name
-    ExhibitIds.SLIGHTLY_WRONG -> R.string.slightly_wrong_name
-    else -> error("No name resource mapped for exhibit ID: $exhibitId")
 }
 
 private val WIDE_EXHIBIT_LAYOUT_MIN_WIDTH = 600.dp

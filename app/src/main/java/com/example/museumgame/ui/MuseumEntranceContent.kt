@@ -216,7 +216,7 @@ private fun ExhibitSelector(
         ) {
             visitStatuses.forEach { status ->
                 val exhibit = requireNotNull(exhibitsById[status.exhibitId])
-                val exhibitName = stringResource(exhibitNameResource(exhibit.id))
+                val exhibitName = stringResource(exhibitUiResources(exhibit.id).nameResource)
                 DropdownMenuItem(
                     text = {
                         Text(

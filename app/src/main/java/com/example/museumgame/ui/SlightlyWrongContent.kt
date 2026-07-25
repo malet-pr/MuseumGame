@@ -20,6 +20,7 @@ import com.example.museumgame.game.SlightlyWrongClue
 import com.example.museumgame.game.SlightlyWrongDetail
 import com.example.museumgame.game.SlightlyWrongFeedback
 import com.example.museumgame.game.SlightlyWrongState
+import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.ui.theme.MuseumGameTheme
 
 @Composable
@@ -35,10 +36,11 @@ fun SlightlyWrongContent(
     onReturnToEntrance: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val resources = exhibitUiResources(ExhibitIds.SLIGHTLY_WRONG)
     ResponsiveExhibitLayout(
-        titleResource = R.string.slightly_wrong_name,
-        illustrationResource = R.drawable.slightly_wrong,
-        illustrationDescriptionResource = R.string.slightly_wrong_image_description,
+        titleResource = resources.nameResource,
+        illustrationResource = resources.illustrationResource,
+        illustrationDescriptionResource = resources.illustrationDescriptionResource,
         modifier = modifier
     ) {
         Text(
@@ -61,27 +63,15 @@ fun SlightlyWrongContent(
         )
         if (puzzleState.solved) {
             Text(stringResource(R.string.exhibit_solved, progress.attempts))
-            Button(onClick = onContinue) {
-                Text(
-                    stringResource(
-                        if (isFinalExhibit) {
-                            R.string.complete_visit
-                        } else {
-                            R.string.continue_visit
-                        }
-                    )
-                )
-            }
         }
-        Button(onClick = onRestart) {
-            Text(stringResource(R.string.restart_exhibit))
-        }
-        Button(onClick = onRestartMuseum) {
-            Text(stringResource(R.string.restart_museum))
-        }
-        Button(onClick = onReturnToEntrance) {
-            Text(stringResource(R.string.return_to_entrance))
-        }
+        ExhibitNavigationActions(
+            solved = puzzleState.solved,
+            isFinalExhibit = isFinalExhibit,
+            onContinue = onContinue,
+            onRestartExhibit = onRestart,
+            onRestartMuseum = onRestartMuseum,
+            onReturnToEntrance = onReturnToEntrance
+        )
     }
 }
 

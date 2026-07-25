@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.museumgame.R
-import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.viewmodel.MuseumDestination
 import com.example.museumgame.viewmodel.MuseumGameViewModel
 
@@ -40,8 +39,10 @@ fun MuseumScreen(
             modifier = modifier
         )
 
-        is MuseumDestination.ExhibitDetail -> when (destination.exhibitId) {
-            ExhibitIds.REAPPEARING_PEN -> ReappearingPenContent(
+        is MuseumDestination.ExhibitDetail -> when (
+            exhibitUiResources(destination.exhibitId).screen
+        ) {
+            ExhibitUiScreen.REAPPEARING_PEN -> ReappearingPenContent(
                 progress = state.reappearingPen.progress,
                 puzzleState = state.reappearingPen.puzzleState,
                 feedback = state.reappearingPen.feedback,
@@ -55,7 +56,7 @@ fun MuseumScreen(
                 modifier = modifier
             )
 
-            ExhibitIds.SLIGHTLY_WRONG -> SlightlyWrongContent(
+            ExhibitUiScreen.SLIGHTLY_WRONG -> SlightlyWrongContent(
                 progress = state.slightlyWrong.progress,
                 puzzleState = state.slightlyWrong.puzzleState,
                 feedback = state.slightlyWrong.feedback,
@@ -69,7 +70,6 @@ fun MuseumScreen(
                 modifier = modifier
             )
 
-            else -> error("No screen mapped for exhibit ID: ${destination.exhibitId}")
         }
     }
 
