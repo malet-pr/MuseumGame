@@ -9,7 +9,10 @@ import com.example.museumgame.game.ExhibitVisitStatus
 import com.example.museumgame.game.MuseumGame
 import com.example.museumgame.game.PenInspectionFeedback
 import com.example.museumgame.game.PenLocation
+import com.example.museumgame.game.ProgressCategory
 import com.example.museumgame.game.ReappearingPenState
+import com.example.museumgame.game.SimulatedProgressFeedback
+import com.example.museumgame.game.SimulatedProgressState
 import com.example.museumgame.game.SlightlyWrongDetail
 import com.example.museumgame.game.SlightlyWrongFeedback
 import com.example.museumgame.game.SlightlyWrongState
@@ -31,7 +34,8 @@ data class MuseumUiState(
     val visitStatuses: List<ExhibitVisitStatus>,
     val reappearingPen: ReappearingPenUiState = ReappearingPenUiState(),
     val slightlyWrong: SlightlyWrongUiState = SlightlyWrongUiState(),
-    val workApparent: WorkApparentUiState = WorkApparentUiState()
+    val workApparent: WorkApparentUiState = WorkApparentUiState(),
+    val simulatedProgress: SimulatedProgressUiState = SimulatedProgressUiState()
 )
 
 data class ReappearingPenUiState(
@@ -50,6 +54,12 @@ data class WorkApparentUiState(
     val progress: ExhibitProgress = ExhibitProgress(),
     val puzzleState: WorkApparentState = WorkApparentState(),
     val feedback: WorkApparentFeedback? = null
+)
+
+data class SimulatedProgressUiState(
+    val progress: ExhibitProgress = ExhibitProgress(),
+    val puzzleState: SimulatedProgressState = SimulatedProgressState(),
+    val feedback: SimulatedProgressFeedback? = null
 )
 
 class MuseumGameViewModel : ViewModel() {
@@ -126,6 +136,13 @@ class MuseumGameViewModel : ViewModel() {
         refreshDomainState()
     }
 
+    fun classifySimulatedProgress(category: ProgressCategory) {
+        if (!canActIn(ExhibitIds.SIMULATED_PROGRESS)) return
+
+        game.classifySimulatedProgress(category)
+        refreshDomainState()
+    }
+
     fun restartCurrentExhibit() {
         val exhibitId =
             (uiState.destination as? MuseumDestination.ExhibitDetail)?.exhibitId
@@ -163,6 +180,11 @@ class MuseumGameViewModel : ViewModel() {
                 progress = game.workApparentProgress,
                 puzzleState = game.workApparentState,
                 feedback = game.workApparentFeedback
+            ),
+            simulatedProgress = SimulatedProgressUiState(
+                progress = game.simulatedProgressProgress,
+                puzzleState = game.simulatedProgressState,
+                feedback = game.simulatedProgressFeedback
             )
         )
     }

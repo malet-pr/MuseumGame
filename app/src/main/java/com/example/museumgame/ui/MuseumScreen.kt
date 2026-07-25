@@ -85,6 +85,20 @@ fun MuseumScreen(
                 modifier = modifier
             )
 
+            ExhibitUiScreen.SIMULATED_PROGRESS -> SimulatedProgressContent(
+                progress = state.simulatedProgress.progress,
+                puzzleState = state.simulatedProgress.puzzleState,
+                feedback = state.simulatedProgress.feedback,
+                onClassify = viewModel::classifySimulatedProgress,
+                onRestart = viewModel::restartCurrentExhibit,
+                onRestartMuseum = requestMuseumRestart,
+                onContinue = viewModel::continueVisit,
+                isFinalExhibit =
+                    state.visitStatuses.lastOrNull()?.exhibitId == destination.exhibitId,
+                onReturnToEntrance = viewModel::returnToEntrance,
+                modifier = modifier
+            )
+
         }
     }
 

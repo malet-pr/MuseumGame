@@ -1,6 +1,7 @@
 package com.example.museumgame.viewmodel
 
 import com.example.museumgame.game.PenLocation
+import com.example.museumgame.game.ProgressCategory
 import com.example.museumgame.game.SlightlyWrongDetail
 import com.example.museumgame.game.WorkApparentInterruption
 import com.example.museumgame.game.WorkApparentStage
@@ -35,6 +36,17 @@ internal fun MuseumGameViewModel.solveThrough(targetExhibitId: String) {
                 ExhibitIds.WORK_APPARENT -> {
                     WorkApparentStage.entries.forEach(::traceWorkApparent)
                     interruptWorkApparent(WorkApparentInterruption.COMPLETE_ONE_TASK)
+                }
+
+                ExhibitIds.SIMULATED_PROGRESS -> {
+                    listOf(
+                        ProgressCategory.ACTIVITY,
+                        ProgressCategory.OUTPUT,
+                        ProgressCategory.IMPACT,
+                        ProgressCategory.ACTIVITY,
+                        ProgressCategory.OUTPUT,
+                        ProgressCategory.IMPACT
+                    ).forEach(::classifySimulatedProgress)
                 }
 
                 else -> error("No ViewModel test solver mapped for exhibit ID: $exhibitId")

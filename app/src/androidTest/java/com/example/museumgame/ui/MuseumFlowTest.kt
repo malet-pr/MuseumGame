@@ -164,10 +164,17 @@ class MuseumFlowTest {
             .performClick()
         composeRule
             .onNodeWithText("Locked: Slightly Wrong")
+            .performScrollTo()
             .assertIsDisplayed()
             .assertIsNotEnabled()
         composeRule
             .onNodeWithText("Locked: Work Apparent")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
+        composeRule
+            .onNodeWithText("Locked: Simulated Progress")
+            .performScrollTo()
             .assertIsDisplayed()
             .assertIsNotEnabled()
         pressBack()
@@ -200,6 +207,11 @@ class MuseumFlowTest {
             .performScrollTo()
             .performClick()
         solveWorkApparent()
+        composeRule
+            .onNodeWithText("Continue to next exhibit")
+            .performScrollTo()
+            .performClick()
+        solveSimulatedProgress()
         composeRule
             .onNodeWithText("Complete visit")
             .performScrollTo()
@@ -269,6 +281,22 @@ class MuseumFlowTest {
         ).forEach { label ->
             composeRule
                 .onNodeWithText(label)
+                .performScrollTo()
+                .performClick()
+        }
+    }
+
+    private fun solveSimulatedProgress() {
+        listOf(
+            "Activity",
+            "Output",
+            "Impact",
+            "Activity",
+            "Output",
+            "Impact"
+        ).forEach { category ->
+            composeRule
+                .onNodeWithText(category)
                 .performScrollTo()
                 .performClick()
         }

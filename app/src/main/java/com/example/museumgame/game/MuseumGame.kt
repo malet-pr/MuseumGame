@@ -8,6 +8,7 @@ class MuseumGame {
     private val reappearingPenPuzzle = ReappearingPenPuzzle()
     private val slightlyWrongPuzzle = SlightlyWrongPuzzle()
     private val workApparentPuzzle = WorkApparentPuzzle()
+    private val simulatedProgressPuzzle = SimulatedProgressPuzzle()
 
     val exhibits = ExhibitCatalog.orderedExhibits
     val orderedExhibitIds = exhibits.map(Exhibit::id)
@@ -24,6 +25,9 @@ class MuseumGame {
     var workApparentFeedback: WorkApparentFeedback? = null
         private set
 
+    var simulatedProgressFeedback: SimulatedProgressFeedback? = null
+        private set
+
     val reappearingPenProgress: ExhibitProgress
         get() = progressFor(ExhibitIds.REAPPEARING_PEN)
 
@@ -32,6 +36,9 @@ class MuseumGame {
 
     val workApparentProgress: ExhibitProgress
         get() = progressFor(ExhibitIds.WORK_APPARENT)
+
+    val simulatedProgressProgress: ExhibitProgress
+        get() = progressFor(ExhibitIds.SIMULATED_PROGRESS)
 
     val reappearingPenState: ReappearingPenState
         get() = reappearingPenPuzzle.state
@@ -42,10 +49,14 @@ class MuseumGame {
     val workApparentState: WorkApparentState
         get() = workApparentPuzzle.state
 
+    val simulatedProgressState: SimulatedProgressState
+        get() = simulatedProgressPuzzle.state
+
     fun isCompleted(exhibitId: String): Boolean = when (exhibitId) {
         ExhibitIds.REAPPEARING_PEN -> reappearingPenState.solved
         ExhibitIds.SLIGHTLY_WRONG -> slightlyWrongState.solved
         ExhibitIds.WORK_APPARENT -> workApparentState.solved
+        ExhibitIds.SIMULATED_PROGRESS -> simulatedProgressState.solved
         else -> error("No completion rule mapped for exhibit ID: $exhibitId")
     }
 
@@ -163,6 +174,30 @@ class MuseumGame {
         return result
     }
 
+    fun classifySimulatedProgress(
+        category: ProgressCategory
+    ): SimulatedProgressResult {
+        val result = when {
+            simulatedProgressState.solved -> SimulatedProgressResult(
+                state = simulatedProgressPuzzle.state,
+                feedback = SimulatedProgressFeedback.ALREADY_SOLVED
+            )
+
+            !isUnlocked(ExhibitIds.SIMULATED_PROGRESS) -> SimulatedProgressResult(
+                state = simulatedProgressPuzzle.state,
+                feedback = SimulatedProgressFeedback.LOCKED
+            )
+
+            else -> {
+                recordAttempt(ExhibitIds.SIMULATED_PROGRESS)
+                simulatedProgressPuzzle.classify(category)
+            }
+        }
+
+        simulatedProgressFeedback = result.feedback
+        return result
+    }
+
     fun restartExhibit(exhibitId: String) {
         val restartIndex = orderedExhibitIds.indexOf(exhibitId)
         if (restartIndex < 0) return
@@ -198,6 +233,11 @@ class MuseumGame {
             ExhibitIds.WORK_APPARENT -> {
                 workApparentPuzzle.restart()
                 workApparentFeedback = null
+            }
+
+            ExhibitIds.SIMULATED_PROGRESS -> {
+                simulatedProgressPuzzle.restart()
+                simulatedProgressFeedback = null
             }
 
             else -> error("No restart rule mapped for exhibit ID: $exhibitId")

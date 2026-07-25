@@ -28,6 +28,17 @@ internal fun MuseumGame.solveThrough(targetExhibitId: String) {
                     interruptWorkApparent(WorkApparentInterruption.COMPLETE_ONE_TASK)
                 }
 
+                ExhibitIds.SIMULATED_PROGRESS -> {
+                    listOf(
+                        ProgressCategory.ACTIVITY,
+                        ProgressCategory.OUTPUT,
+                        ProgressCategory.IMPACT,
+                        ProgressCategory.ACTIVITY,
+                        ProgressCategory.OUTPUT,
+                        ProgressCategory.IMPACT
+                    ).forEach(::classifySimulatedProgress)
+                }
+
                 else -> error("No test solver mapped for exhibit ID: $exhibitId")
             }
         }

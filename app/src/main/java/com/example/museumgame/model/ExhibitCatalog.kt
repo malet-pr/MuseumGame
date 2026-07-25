@@ -19,6 +19,12 @@ object ExhibitCatalog {
             name = "Work Apparent",
             description = "A paper trail produces endless activity while every task returns to the inbox.",
             isAnomaly = true
+        ),
+        Exhibit(
+            id = ExhibitIds.SIMULATED_PROGRESS,
+            name = "Simulated Progress",
+            description = "A busy workshop confuses effort and deliverables with meaningful change.",
+            isAnomaly = true
         )
     )
 }

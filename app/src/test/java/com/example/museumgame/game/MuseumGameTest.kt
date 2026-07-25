@@ -21,6 +21,7 @@ class MuseumGameTest {
         assertTrue(game.isCompleted(ExhibitIds.REAPPEARING_PEN))
         assertEquals(0, game.slightlyWrongProgress.attempts)
         assertEquals(0, game.workApparentProgress.attempts)
+        assertEquals(0, game.simulatedProgressProgress.attempts)
     }
 
     @Test
@@ -49,6 +50,7 @@ class MuseumGameTest {
         assertTrue(game.isCompleted(ExhibitIds.SLIGHTLY_WRONG))
         assertEquals(3, game.reappearingPenProgress.attempts)
         assertEquals(0, game.workApparentProgress.attempts)
+        assertEquals(0, game.simulatedProgressProgress.attempts)
     }
 
     @Test
@@ -135,6 +137,53 @@ class MuseumGameTest {
     }
 
     @Test
+    fun simulatedProgressCannotAdvanceBeforeWorkApparentCompletion() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
+
+        val result = game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
+
+        assertEquals(SimulatedProgressFeedback.LOCKED, result.feedback)
+        assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
+        assertEquals(SimulatedProgressState(), game.simulatedProgressState)
+        assertFalse(game.isCompleted(ExhibitIds.SIMULATED_PROGRESS))
+    }
+
+    @Test
+    fun simulatedProgressChoicesCountAndCorrectSequenceSolvesIt() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.WORK_APPARENT)
+
+        game.classifySimulatedProgress(ProgressCategory.IMPACT)
+        listOf(
+            ProgressCategory.ACTIVITY,
+            ProgressCategory.OUTPUT,
+            ProgressCategory.IMPACT,
+            ProgressCategory.ACTIVITY,
+            ProgressCategory.OUTPUT,
+            ProgressCategory.IMPACT
+        ).forEach(game::classifySimulatedProgress)
+
+        assertEquals(7, game.simulatedProgressProgress.attempts)
+        assertTrue(game.simulatedProgressState.solved)
+        assertEquals(
+            SimulatedProgressFeedback.PUZZLE_SOLVED,
+            game.simulatedProgressFeedback
+        )
+    }
+
+    @Test
+    fun simulatedProgressChoiceAfterSolvedDoesNotIncreaseAttempts() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+
+        val result = game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
+
+        assertEquals(6, game.simulatedProgressProgress.attempts)
+        assertEquals(SimulatedProgressFeedback.ALREADY_SOLVED, result.feedback)
+    }
+
+    @Test
     fun restartingPenAfterSlightlyWrongProgressResetsBothExhibits() {
         val game = newGame()
         game.solveThrough(ExhibitIds.REAPPEARING_PEN)
@@ -148,9 +197,12 @@ class MuseumGameTest {
         assertEquals(SlightlyWrongState(), game.slightlyWrongState)
         assertEquals(ExhibitProgress(), game.workApparentProgress)
         assertEquals(WorkApparentState(), game.workApparentState)
+        assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
+        assertEquals(SimulatedProgressState(), game.simulatedProgressState)
         assertNull(game.reappearingPenFeedback)
         assertNull(game.slightlyWrongFeedback)
         assertNull(game.workApparentFeedback)
+        assertNull(game.simulatedProgressFeedback)
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
     }
 
@@ -189,10 +241,10 @@ class MuseumGameTest {
     }
 
     @Test
-    fun restartingWorkApparentPreservesEarlierExhibits() {
+    fun restartingWorkApparentAfterSimulatedProgressResetsBothAndPreservesEarlierExhibits() {
         val game = newGame()
-        game.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
-        game.traceWorkApparent(WorkApparentStage.TASKS_RECEIVED)
+        game.solveThrough(ExhibitIds.WORK_APPARENT)
+        game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
 
         game.restartExhibit(ExhibitIds.WORK_APPARENT)
 
@@ -202,8 +254,28 @@ class MuseumGameTest {
         assertEquals(3, game.slightlyWrongProgress.attempts)
         assertEquals(ExhibitProgress(), game.workApparentProgress)
         assertEquals(WorkApparentState(), game.workApparentState)
+        assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
+        assertEquals(SimulatedProgressState(), game.simulatedProgressState)
         assertNull(game.workApparentFeedback)
+        assertNull(game.simulatedProgressFeedback)
         assertTrue(game.isUnlocked(ExhibitIds.WORK_APPARENT))
+    }
+
+    @Test
+    fun restartingSimulatedProgressPreservesEarlierExhibits() {
+        val game = newGame()
+        game.solveThrough(ExhibitIds.WORK_APPARENT)
+        game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
+
+        game.restartExhibit(ExhibitIds.SIMULATED_PROGRESS)
+
+        assertTrue(game.reappearingPenState.solved)
+        assertTrue(game.slightlyWrongState.solved)
+        assertTrue(game.workApparentState.solved)
+        assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
+        assertEquals(SimulatedProgressState(), game.simulatedProgressState)
+        assertNull(game.simulatedProgressFeedback)
+        assertTrue(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
     }
 
     @Test
@@ -214,6 +286,7 @@ class MuseumGameTest {
         assertTrue(game.isUnlocked(ExhibitIds.REAPPEARING_PEN))
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
         assertFalse(game.isUnlocked(ExhibitIds.WORK_APPARENT))
+        assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
         assertEquals(
             ExhibitIds.SLIGHTLY_WRONG,
             game.nextExhibitId(ExhibitIds.REAPPEARING_PEN)
@@ -228,6 +301,7 @@ class MuseumGameTest {
         assertEquals(ExhibitIds.SLIGHTLY_WRONG, game.firstUnfinishedExhibitId())
         assertTrue(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
         assertFalse(game.isUnlocked(ExhibitIds.WORK_APPARENT))
+        assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
         assertTrue(game.visitStatuses().first { it.exhibitId == ExhibitIds.REAPPEARING_PEN }.completed)
     }
 
@@ -239,28 +313,46 @@ class MuseumGameTest {
 
         assertEquals(ExhibitIds.WORK_APPARENT, game.firstUnfinishedExhibitId())
         assertTrue(game.isUnlocked(ExhibitIds.WORK_APPARENT))
+        assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
+    }
+
+    @Test
+    fun solvingWorkApparentUnlocksSimulatedProgressAndMakesItCurrent() {
+        val game = newGame()
+
+        game.solveThrough(ExhibitIds.WORK_APPARENT)
+
+        assertEquals(
+            ExhibitIds.SIMULATED_PROGRESS,
+            game.firstUnfinishedExhibitId()
+        )
+        assertTrue(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
     }
 
     @Test
     fun restartMuseumClearsEveryPuzzleAndRestoresInitialProgression() {
         val game = newGame()
-        game.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
-        game.traceWorkApparent(WorkApparentStage.TASKS_RECEIVED)
+        game.solveThrough(ExhibitIds.WORK_APPARENT)
+        game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
 
         game.restartMuseum()
 
         assertEquals(ExhibitProgress(), game.reappearingPenProgress)
         assertEquals(ExhibitProgress(), game.slightlyWrongProgress)
         assertEquals(ExhibitProgress(), game.workApparentProgress)
+        assertEquals(ExhibitProgress(), game.simulatedProgressProgress)
         assertEquals(ReappearingPenState(), game.reappearingPenState)
         assertEquals(SlightlyWrongState(), game.slightlyWrongState)
         assertEquals(WorkApparentState(), game.workApparentState)
+        assertEquals(SimulatedProgressState(), game.simulatedProgressState)
         assertNull(game.reappearingPenFeedback)
         assertNull(game.slightlyWrongFeedback)
         assertNull(game.workApparentFeedback)
+        assertNull(game.simulatedProgressFeedback)
         assertEquals(ExhibitIds.REAPPEARING_PEN, game.firstUnfinishedExhibitId())
         assertFalse(game.isUnlocked(ExhibitIds.SLIGHTLY_WRONG))
         assertFalse(game.isUnlocked(ExhibitIds.WORK_APPARENT))
+        assertFalse(game.isUnlocked(ExhibitIds.SIMULATED_PROGRESS))
     }
 
     @Test
@@ -272,11 +364,17 @@ class MuseumGameTest {
         assertNoCompletedLockedState(game)
         game.traceWorkApparent(WorkApparentStage.TASKS_RECEIVED)
         assertNoCompletedLockedState(game)
+        game.classifySimulatedProgress(ProgressCategory.ACTIVITY)
+        assertNoCompletedLockedState(game)
         game.solveThrough(ExhibitIds.REAPPEARING_PEN)
         assertNoCompletedLockedState(game)
         game.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
         assertNoCompletedLockedState(game)
         game.solveThrough(ExhibitIds.WORK_APPARENT)
+        assertNoCompletedLockedState(game)
+        game.solveThrough(ExhibitIds.SIMULATED_PROGRESS)
+        assertNoCompletedLockedState(game)
+        game.restartExhibit(ExhibitIds.SIMULATED_PROGRESS)
         assertNoCompletedLockedState(game)
         game.restartExhibit(ExhibitIds.WORK_APPARENT)
         assertNoCompletedLockedState(game)
