@@ -38,7 +38,6 @@ import com.example.museumgame.R
 import com.example.museumgame.game.ExhibitVisitStatus
 import com.example.museumgame.model.Exhibit
 import com.example.museumgame.model.ExhibitCatalog
-import com.example.museumgame.model.ExhibitIds
 import com.example.museumgame.ui.theme.MuseumGameTheme
 
 @Composable
@@ -249,20 +248,14 @@ private fun ExhibitSelector(
     }
 }
 
-private val previewVisitStatuses = listOf(
+private val previewVisitStatuses = ExhibitCatalog.orderedExhibits.mapIndexed { index, exhibit ->
     ExhibitVisitStatus(
-        exhibitId = ExhibitIds.REAPPEARING_PEN,
+        exhibitId = exhibit.id,
         completed = false,
-        unlocked = true,
-        current = true
-    ),
-    ExhibitVisitStatus(
-        exhibitId = ExhibitIds.SLIGHTLY_WRONG,
-        completed = false,
-        unlocked = false,
-        current = false
+        unlocked = index == 0,
+        current = index == 0
     )
-)
+}
 
 @Preview(name = "Museum entrance - portrait", widthDp = 412, heightDp = 915)
 @Composable

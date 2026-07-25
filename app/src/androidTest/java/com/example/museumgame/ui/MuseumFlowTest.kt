@@ -157,7 +157,7 @@ class MuseumFlowTest {
     }
 
     @Test
-    fun entranceReflectsLocksRevisitsAndCompletedVisit() {
+    fun futureExhibitsAreLockedAtTheEntrance() {
         composeRule
             .onNodeWithText("Choose exhibit")
             .performScrollTo()
@@ -177,9 +177,10 @@ class MuseumFlowTest {
             .performScrollTo()
             .assertIsDisplayed()
             .assertIsNotEnabled()
-        pressBack()
-        composeRule.waitForIdle()
+    }
 
+    @Test
+    fun completedPenCanBeRevisitedFromTheEntranceSelector() {
         composeRule
             .onNodeWithText("Resume visit")
             .performClick()
@@ -196,21 +197,17 @@ class MuseumFlowTest {
         composeRule
             .onNodeWithText("Completed: The Reappearing Pen")
             .assertIsDisplayed()
-        pressBack()
-        composeRule.waitForIdle()
-        composeRule
-            .onNodeWithText("Resume visit")
             .performClick()
-        solveSlightlyWrong()
+
         composeRule
-            .onNodeWithText("Continue to next exhibit")
+            .onNodeWithText("You solved the exhibit in 3 inspections.")
             .performScrollTo()
-            .performClick()
-        solveWorkApparent()
-        composeRule
-            .onNodeWithText("Continue to next exhibit")
-            .performScrollTo()
-            .performClick()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun completeMuseumJourneySmokeTest() {
+        openSimulatedProgress()
         solveSimulatedProgress()
         composeRule
             .onNodeWithText("Complete visit")
@@ -224,6 +221,25 @@ class MuseumFlowTest {
         composeRule
             .onAllNodesWithText("Resume visit")
             .assertCountEquals(0)
+    }
+
+    @Test
+    fun recreationPreservesSimulatedProgressDestinationAndClassification() {
+        openSimulatedProgress()
+        composeRule
+            .onNodeWithText("Activity")
+            .performScrollTo()
+            .performClick()
+
+        assertFirstSimulatedProgressClassification()
+
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitForIdle()
+
+        composeRule
+            .onNodeWithText("Simulated Progress")
+            .assertIsDisplayed()
+        assertFirstSimulatedProgressClassification()
     }
 
     private fun openPenAndInspectTwoLocations() {
@@ -268,6 +284,46 @@ class MuseumFlowTest {
             .onNodeWithText("Globe")
             .performScrollTo()
             .performClick()
+    }
+
+    private fun openSimulatedProgress() {
+        composeRule
+            .onNodeWithText("Resume visit")
+            .performClick()
+        solvePenFromScratch()
+        continueToNextExhibit()
+        solveSlightlyWrong()
+        continueToNextExhibit()
+        solveWorkApparent()
+        continueToNextExhibit()
+    }
+
+    private fun continueToNextExhibit() {
+        composeRule
+            .onNodeWithText("Continue to next exhibit")
+            .performScrollTo()
+            .performClick()
+    }
+
+    private fun assertFirstSimulatedProgressClassification() {
+        composeRule
+            .onNodeWithText("Choices: 1")
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithText(
+                "Correct. This records effort expended, not something produced or changed."
+            )
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithText("Signals classified: 1 of 6")
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithText("A revised workflow guide is now available to the team.")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     private fun solveWorkApparent() {

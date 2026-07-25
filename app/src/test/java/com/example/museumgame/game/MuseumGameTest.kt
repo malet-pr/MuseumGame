@@ -1,6 +1,7 @@
 package com.example.museumgame.game
 
 import com.example.museumgame.model.ExhibitIds
+import com.example.museumgame.testsupport.WORK_APPARENT_TRACE_SEQUENCE
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -114,7 +115,7 @@ class MuseumGameTest {
         val game = newGame()
         game.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
 
-        WorkApparentStage.entries.forEach(game::traceWorkApparent)
+        WORK_APPARENT_TRACE_SEQUENCE.forEach(game::traceWorkApparent)
         game.interruptWorkApparent(WorkApparentInterruption.REORGANIZE_TASKS)
         val result = game.interruptWorkApparent(
             WorkApparentInterruption.COMPLETE_ONE_TASK

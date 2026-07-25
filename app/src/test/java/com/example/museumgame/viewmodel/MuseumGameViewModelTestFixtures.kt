@@ -1,11 +1,11 @@
 package com.example.museumgame.viewmodel
 
 import com.example.museumgame.game.PenLocation
-import com.example.museumgame.game.ProgressCategory
 import com.example.museumgame.game.SlightlyWrongDetail
 import com.example.museumgame.game.WorkApparentInterruption
-import com.example.museumgame.game.WorkApparentStage
 import com.example.museumgame.model.ExhibitIds
+import com.example.museumgame.testsupport.SIMULATED_PROGRESS_CLASSIFICATIONS
+import com.example.museumgame.testsupport.WORK_APPARENT_TRACE_SEQUENCE
 
 internal fun MuseumGameViewModel.solveThrough(targetExhibitId: String) {
     val orderedExhibitIds = uiState.visitStatuses.map { it.exhibitId }
@@ -34,19 +34,14 @@ internal fun MuseumGameViewModel.solveThrough(targetExhibitId: String) {
                 }
 
                 ExhibitIds.WORK_APPARENT -> {
-                    WorkApparentStage.entries.forEach(::traceWorkApparent)
+                    WORK_APPARENT_TRACE_SEQUENCE.forEach(::traceWorkApparent)
                     interruptWorkApparent(WorkApparentInterruption.COMPLETE_ONE_TASK)
                 }
 
                 ExhibitIds.SIMULATED_PROGRESS -> {
-                    listOf(
-                        ProgressCategory.ACTIVITY,
-                        ProgressCategory.OUTPUT,
-                        ProgressCategory.IMPACT,
-                        ProgressCategory.ACTIVITY,
-                        ProgressCategory.OUTPUT,
-                        ProgressCategory.IMPACT
-                    ).forEach(::classifySimulatedProgress)
+                    SIMULATED_PROGRESS_CLASSIFICATIONS.forEach(
+                        ::classifySimulatedProgress
+                    )
                 }
 
                 else -> error("No ViewModel test solver mapped for exhibit ID: $exhibitId")

@@ -15,6 +15,7 @@ import com.example.museumgame.game.WorkApparentInterruption
 import com.example.museumgame.game.WorkApparentStage
 import com.example.museumgame.game.WorkApparentState
 import com.example.museumgame.model.ExhibitIds
+import com.example.museumgame.testsupport.WORK_APPARENT_TRACE_SEQUENCE
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -176,7 +177,7 @@ class MuseumGameViewModelTest {
         viewModel.solveThrough(ExhibitIds.SLIGHTLY_WRONG)
         viewModel.continueVisit()
 
-        WorkApparentStage.entries.forEach(viewModel::traceWorkApparent)
+        WORK_APPARENT_TRACE_SEQUENCE.forEach(viewModel::traceWorkApparent)
         viewModel.interruptWorkApparent(WorkApparentInterruption.COMPLETE_ONE_TASK)
 
         assertEquals(6, viewModel.uiState.workApparent.progress.attempts)

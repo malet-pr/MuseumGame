@@ -1,25 +1,59 @@
 package com.example.museumgame.game
 
+import com.example.museumgame.testsupport.SIMULATED_PROGRESS_CLASSIFICATIONS
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SimulatedProgressPuzzleTest {
 
     @Test
-    fun correctCategoriesAdvanceThroughActivityOutputAndImpact() {
+    fun everyNamedSignalRequiresItsExplicitExpectedCategory() {
         val puzzle = SimulatedProgressPuzzle()
 
-        val activity = puzzle.classify(ProgressCategory.ACTIVITY)
-        val output = puzzle.classify(ProgressCategory.OUTPUT)
-        val impact = puzzle.classify(ProgressCategory.IMPACT)
+        assertClassification(
+            puzzle,
+            SimulatedProgressSignal.ALIGNMENT_MEETINGS,
+            ProgressCategory.ACTIVITY
+        )
+        assertClassification(
+            puzzle,
+            SimulatedProgressSignal.WORKFLOW_GUIDE,
+            ProgressCategory.OUTPUT
+        )
+        assertClassification(
+            puzzle,
+            SimulatedProgressSignal.FASTER_SETUP,
+            ProgressCategory.IMPACT
+        )
+        assertClassification(
+            puzzle,
+            SimulatedProgressSignal.CODE_REVIEW_TIME,
+            ProgressCategory.ACTIVITY
+        )
+        assertClassification(
+            puzzle,
+            SimulatedProgressSignal.AUTOMATION_SCRIPTS,
+            ProgressCategory.OUTPUT
+        )
+        assertClassification(
+            puzzle,
+            SimulatedProgressSignal.FEWER_SUPPORT_REQUESTS,
+            ProgressCategory.IMPACT
+        )
 
-        assertEquals(SimulatedProgressFeedback.CORRECT_ACTIVITY, activity.feedback)
-        assertEquals(SimulatedProgressFeedback.CORRECT_OUTPUT, output.feedback)
-        assertEquals(SimulatedProgressFeedback.CORRECT_IMPACT, impact.feedback)
-        assertEquals(3, puzzle.state.classifiedSignals.size)
-        assertFalse(puzzle.state.solved)
+        assertTrue(puzzle.state.solved)
+        assertEquals(
+            listOf(
+                SimulatedProgressSignal.ALIGNMENT_MEETINGS,
+                SimulatedProgressSignal.WORKFLOW_GUIDE,
+                SimulatedProgressSignal.FASTER_SETUP,
+                SimulatedProgressSignal.CODE_REVIEW_TIME,
+                SimulatedProgressSignal.AUTOMATION_SCRIPTS,
+                SimulatedProgressSignal.FEWER_SUPPORT_REQUESTS
+            ),
+            puzzle.state.classifiedSignals
+        )
     }
 
     @Test
@@ -81,14 +115,18 @@ class SimulatedProgressPuzzleTest {
     private fun solve(
         puzzle: SimulatedProgressPuzzle
     ): SimulatedProgressResult {
-        val categories = listOf(
-            ProgressCategory.ACTIVITY,
-            ProgressCategory.OUTPUT,
-            ProgressCategory.IMPACT,
-            ProgressCategory.ACTIVITY,
-            ProgressCategory.OUTPUT,
-            ProgressCategory.IMPACT
-        )
-        return categories.map(puzzle::classify).last()
+        return SIMULATED_PROGRESS_CLASSIFICATIONS
+            .map(puzzle::classify)
+            .last()
+    }
+
+    private fun assertClassification(
+        puzzle: SimulatedProgressPuzzle,
+        expectedSignal: SimulatedProgressSignal,
+        expectedCategory: ProgressCategory
+    ) {
+        assertEquals(expectedSignal, puzzle.state.currentSignal)
+        puzzle.classify(expectedCategory)
+        assertEquals(expectedSignal, puzzle.state.classifiedSignals.last())
     }
 }

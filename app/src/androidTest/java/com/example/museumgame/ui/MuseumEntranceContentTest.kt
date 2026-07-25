@@ -2,7 +2,9 @@ package com.example.museumgame.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -81,6 +83,27 @@ class MuseumEntranceContentTest {
         composeRule.runOnIdle {
             assertNull(openedExhibitId)
         }
+    }
+
+    @Test
+    fun completedVisitShowsCompletionAndHidesResume() {
+        setEntranceContent(
+            visitStatuses = ExhibitCatalog.orderedExhibits.map { exhibit ->
+                status(
+                    exhibitId = exhibit.id,
+                    completed = true,
+                    unlocked = true
+                )
+            },
+            onOpenExhibit = {}
+        )
+
+        composeRule
+            .onNodeWithText("Museum visit complete. Every exhibit may be revisited.")
+            .assertIsDisplayed()
+        composeRule
+            .onAllNodesWithText("Resume visit")
+            .assertCountEquals(0)
     }
 
     private fun setEntranceContent(

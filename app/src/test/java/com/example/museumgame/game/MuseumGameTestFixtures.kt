@@ -1,6 +1,8 @@
 package com.example.museumgame.game
 
 import com.example.museumgame.model.ExhibitIds
+import com.example.museumgame.testsupport.SIMULATED_PROGRESS_CLASSIFICATIONS
+import com.example.museumgame.testsupport.WORK_APPARENT_TRACE_SEQUENCE
 
 internal fun MuseumGame.solveThrough(targetExhibitId: String) {
     val targetIndex = orderedExhibitIds.indexOf(targetExhibitId)
@@ -24,19 +26,14 @@ internal fun MuseumGame.solveThrough(targetExhibitId: String) {
                 }
 
                 ExhibitIds.WORK_APPARENT -> {
-                    WorkApparentStage.entries.forEach(::traceWorkApparent)
+                    WORK_APPARENT_TRACE_SEQUENCE.forEach(::traceWorkApparent)
                     interruptWorkApparent(WorkApparentInterruption.COMPLETE_ONE_TASK)
                 }
 
                 ExhibitIds.SIMULATED_PROGRESS -> {
-                    listOf(
-                        ProgressCategory.ACTIVITY,
-                        ProgressCategory.OUTPUT,
-                        ProgressCategory.IMPACT,
-                        ProgressCategory.ACTIVITY,
-                        ProgressCategory.OUTPUT,
-                        ProgressCategory.IMPACT
-                    ).forEach(::classifySimulatedProgress)
+                    SIMULATED_PROGRESS_CLASSIFICATIONS.forEach(
+                        ::classifySimulatedProgress
+                    )
                 }
 
                 else -> error("No test solver mapped for exhibit ID: $exhibitId")
