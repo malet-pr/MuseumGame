@@ -3,8 +3,12 @@
     <string name="museum_entrance_title">Museum Entrance</string>
     <string name="museum_entrance_description">The entrance to a quiet museum lined with unusual exhibits.</string>
     <string name="resume_visit">Resume visit</string>
+    <string name="exhibit_selector_label">Exhibit selector</string>
+    <string name="choose_exhibit">Choose exhibit</string>
+    <string name="exhibit_selector_collapsed">Collapsed</string>
+    <string name="exhibit_selector_expanded">Expanded</string>
     <string name="current_exhibit">Current: %1$s</string>
-    <string name="revisit_exhibit">Revisit %1$s</string>
+    <string name="completed_exhibit">Completed: %1$s</string>
     <string name="locked_exhibit">Locked: %1$s</string>
     <string name="museum_visit_complete">Museum visit complete. Every exhibit may be revisited.</string>
     <string name="continue_visit">Continue to next exhibit</string>

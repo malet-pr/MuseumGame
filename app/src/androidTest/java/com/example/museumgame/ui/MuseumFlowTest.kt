@@ -159,10 +159,15 @@ class MuseumFlowTest {
     @Test
     fun entranceReflectsLocksRevisitsAndCompletedVisit() {
         composeRule
-            .onNodeWithText("Locked: Slightly Wrong")
+            .onNodeWithText("Choose exhibit")
             .performScrollTo()
+            .performClick()
+        composeRule
+            .onNodeWithText("Locked: Slightly Wrong")
             .assertIsDisplayed()
             .assertIsNotEnabled()
+        pressBack()
+        composeRule.waitForIdle()
 
         composeRule
             .onNodeWithText("Resume visit")
@@ -174,9 +179,14 @@ class MuseumFlowTest {
             .performClick()
 
         composeRule
-            .onNodeWithText("Revisit The Reappearing Pen")
+            .onNodeWithText("Choose exhibit")
             .performScrollTo()
+            .performClick()
+        composeRule
+            .onNodeWithText("Completed: The Reappearing Pen")
             .assertIsDisplayed()
+        pressBack()
+        composeRule.waitForIdle()
         composeRule
             .onNodeWithText("Resume visit")
             .performClick()
