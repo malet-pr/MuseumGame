@@ -116,14 +116,21 @@ class MuseumGame {
     }
 
     fun inspectReappearingPen(location: PenLocation): PenInspectionResult {
-        val result = if (reappearingPenState.solved) {
-            PenInspectionResult(
+        val result = when {
+            reappearingPenState.solved -> PenInspectionResult(
                 state = reappearingPenPuzzle.state,
                 feedback = PenInspectionFeedback.ALREADY_SOLVED
             )
-        } else {
-            recordAttempt(ExhibitIds.REAPPEARING_PEN)
-            reappearingPenPuzzle.inspect(location)
+
+            !isUnlocked(ExhibitIds.REAPPEARING_PEN) -> PenInspectionResult(
+                state = reappearingPenPuzzle.state,
+                feedback = PenInspectionFeedback.LOCKED
+            )
+
+            else -> {
+                recordAttempt(ExhibitIds.REAPPEARING_PEN)
+                reappearingPenPuzzle.inspect(location)
+            }
         }
 
         reappearingPenFeedback = result.feedback

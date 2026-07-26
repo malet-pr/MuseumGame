@@ -58,7 +58,10 @@
     <string name="work_apparent_feedback_loop_continues">That creates more activity, but the task remains unfinished.</string>
     <string name="work_apparent_feedback_solved">One task is complete. The loop stops when work produces an outcome.</string>
     <string name="work_apparent_choices">Choices: %1$d</string>
-    <string name="work_apparent_solved">You broke the loop in %1$d choices.</string>
+    <plurals name="work_apparent_solved">
+        <item quantity="one">You broke the loop in %1$d choice.</item>
+        <item quantity="other">You broke the loop in %1$d choices.</item>
+    </plurals>
     <string name="simulated_progress_name">Simulated Progress</string>
     <string name="simulated_progress_image_description">A dark museum workshop filled with meetings, code, workflow diagrams, planning boards, and metrics that track activity, output, and undefined impact.</string>
     <string name="simulated_progress_instructions">Classify each piece of evidence by what it actually proves.</string>
@@ -83,7 +86,10 @@
     <string name="simulated_progress_all_classified">Every signal has been classified.</string>
     <string name="simulated_progress_classified">Signals classified: %1$d of %2$d</string>
     <string name="simulated_progress_choices">Choices: %1$d</string>
-    <string name="simulated_progress_solved">You clarified progress in %1$d choices.</string>
+    <plurals name="simulated_progress_solved">
+        <item quantity="one">You clarified progress in %1$d choice.</item>
+        <item quantity="other">You clarified progress in %1$d choices.</item>
+    </plurals>
     <string name="near_occurrence_name">Near Occurrence</string>
     <string name="near_occurrence_image_description">A dim museum room of suspended moments, with a tipped cup and apple on a table, an empty coat and boots, and an open book hovering beside a chair.</string>
     <string name="near_occurrence_instructions">Move the moment forward, then preserve it exactly before consequence.</string>
@@ -100,7 +106,10 @@
     <string name="near_occurrence_advance">Advance</string>
     <string name="near_occurrence_preserve">Preserve</string>
     <string name="near_occurrence_choices">Choices: %1$d</string>
-    <string name="near_occurrence_solved">You preserved the moment in %1$d choices.</string>
+    <plurals name="near_occurrence_solved">
+        <item quantity="one">You preserved the moment in %1$d choice.</item>
+        <item quantity="other">You preserved the moment in %1$d choices.</item>
+    </plurals>
     <string name="creative_chaos_name">Creative Chaos</string>
     <string name="creative_chaos_image_description">A crowded museum workbench covered with grids, sketches, code screens, overlapping diagrams, and an abstract pattern emerging from the collision.</string>
     <string name="creative_chaos_instructions">Select two available fragments and combine them to create something new.</string>
@@ -136,7 +145,10 @@
     <string name="exhibit_piece_with_status">%1$s — %2$s</string>
     <string name="creative_chaos_combine">Combine fragments</string>
     <string name="creative_chaos_combinations">Combinations: %1$d</string>
-    <string name="creative_chaos_solved">You created meaning in %1$d combinations.</string>
+    <plurals name="creative_chaos_solved">
+        <item quantity="one">You created meaning in %1$d combination.</item>
+        <item quantity="other">You created meaning in %1$d combinations.</item>
+    </plurals>
     <string name="finale_title">Museum visit complete</string>
     <string name="finale_image_description">A fantastical city at night, connected by bridges and divided into glowing districts with domes, towers, gardens, markets, and a winding labyrinth.</string>
     <string name="finale_completion_message">You found every minor mystery. Beyond the final gallery, another city is waiting.</string>
@@ -158,7 +170,10 @@
     <string name="exhibit_already_solved">This exhibit is already solved.</string>
     <string name="exhibit_locked">This exhibit is locked. Complete the previous exhibit first.</string>
     <string name="inspections">Inspections: %1$d</string>
-    <string name="exhibit_solved">You solved the exhibit in %1$d inspections.</string>
+    <plurals name="exhibit_solved">
+        <item quantity="one">You solved the exhibit in %1$d inspection.</item>
+        <item quantity="other">You solved the exhibit in %1$d inspections.</item>
+    </plurals>
     <string name="restart_exhibit">Restart exhibit</string>
     <string name="return_to_entrance">Back to museum entrance</string>
 </resources>

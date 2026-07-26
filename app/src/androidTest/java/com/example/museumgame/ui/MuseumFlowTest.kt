@@ -1,5 +1,7 @@
 package com.example.museumgame.ui
 
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -281,6 +283,64 @@ class MuseumFlowTest {
         assertFirstSimulatedProgressClassification()
     }
 
+    @Test
+    fun landscapeKeepsEntranceAndExhibitActionsReachable() {
+        composeRule.activity.requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.activity.resources.configuration.orientation ==
+                Configuration.ORIENTATION_LANDSCAPE
+        }
+
+        try {
+            composeRule
+                .onNodeWithText("Museum Entrance")
+                .assertIsDisplayed()
+            composeRule
+                .onNodeWithText("Resume visit")
+                .performScrollTo()
+                .performClick()
+            composeRule
+                .onNodeWithText("The Reappearing Pen")
+                .assertIsDisplayed()
+            composeRule
+                .onNodeWithText("Back to museum entrance")
+                .performScrollTo()
+                .assertIsDisplayed()
+        } finally {
+            composeRule.activity.requestedOrientation =
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
+
+    @Test
+    fun recreationPreservesMidCreativeChaosStateAndFeedback() {
+        openCreativeChaos()
+        listOf(
+            "Grid — Available",
+            "Sketch — Available",
+            "Combine fragments",
+            "Pattern — Generated",
+            "Code — Available",
+            "Note — Available"
+        ).forEach { action ->
+            composeRule
+                .onNodeWithText(action)
+                .performScrollTo()
+                .performClick()
+        }
+
+        assertMidCreativeChaosState()
+
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitForIdle()
+
+        composeRule
+            .onNodeWithText("Creative Chaos")
+            .assertIsDisplayed()
+        assertMidCreativeChaosState()
+    }
+
     private fun openPenAndInspectTwoLocations() {
         composeRule
             .onNodeWithText("Resume visit")
@@ -408,6 +468,22 @@ class MuseumFlowTest {
             )
             .performScrollTo()
             .assertIsDisplayed()
+    }
+
+    private fun assertMidCreativeChaosState() {
+        listOf(
+            "Add motion",
+            "Generated fragments: Pattern.",
+            "Pattern — Selected",
+            "Code — Selected",
+            "Only two fragments can collide at once.",
+            "Combinations: 1"
+        ).forEach { expectedText ->
+            composeRule
+                .onNodeWithText(expectedText)
+                .performScrollTo()
+                .assertIsDisplayed()
+        }
     }
 
     private fun solveWorkApparent() {

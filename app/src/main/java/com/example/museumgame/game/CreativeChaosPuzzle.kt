@@ -27,11 +27,22 @@ enum class CreativeChaosFeedback {
     ALREADY_SOLVED
 }
 
+private val COMPLETED_CHAOS_PIECES = setOf(
+    ChaosPiece.GRID,
+    ChaosPiece.SKETCH,
+    ChaosPiece.CODE,
+    ChaosPiece.NOTE,
+    ChaosPiece.PATTERN,
+    ChaosPiece.MOTION
+)
+
 data class CreativeChaosState(
     val step: CreativeChaosStep = CreativeChaosStep.FORM_PATTERN,
-    val selectedPieces: Set<ChaosPiece> = emptySet(),
-    val solved: Boolean = false
+    val selectedPieces: Set<ChaosPiece> = emptySet()
 ) {
+    val solved: Boolean
+        get() = step == CreativeChaosStep.COMPLETE
+
     val availablePieces: Set<ChaosPiece>
         get() = when (step) {
             CreativeChaosStep.FORM_PATTERN -> setOf(
@@ -81,7 +92,7 @@ data class CreativeChaosState(
                 ChaosPiece.CODE
             )
 
-            CreativeChaosStep.COMPLETE -> ChaosPiece.entries.toSet()
+            CreativeChaosStep.COMPLETE -> COMPLETED_CHAOS_PIECES
         }
 }
 
@@ -130,8 +141,7 @@ class CreativeChaosPuzzle {
 
         state = state.copy(
             step = recipe.nextStep,
-            selectedPieces = emptySet(),
-            solved = recipe.nextStep == CreativeChaosStep.COMPLETE
+            selectedPieces = emptySet()
         )
         return result(recipe.feedback)
     }

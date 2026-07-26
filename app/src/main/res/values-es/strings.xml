@@ -58,7 +58,11 @@
     <string name="work_apparent_feedback_loop_continues">Eso genera más actividad, pero la tarea sigue sin terminar.</string>
     <string name="work_apparent_feedback_solved">Una tarea está completa. El bucle se detiene cuando el trabajo produce un resultado.</string>
     <string name="work_apparent_choices">Decisiones: %1$d</string>
-    <string name="work_apparent_solved">Cortaste el bucle en %1$d decisiones.</string>
+    <plurals name="work_apparent_solved">
+        <item quantity="one">Cortaste el bucle en %1$d decisión.</item>
+        <item quantity="many">Cortaste el bucle en %1$d decisiones.</item>
+        <item quantity="other">Cortaste el bucle en %1$d decisiones.</item>
+    </plurals>
     <string name="simulated_progress_name">Progreso simulado</string>
     <string name="simulated_progress_image_description">Un taller oscuro de museo lleno de reuniones, código, diagramas de flujo, tableros de planificación y métricas que registran actividad, producción e impacto indefinido.</string>
     <string name="simulated_progress_instructions">Clasificá cada evidencia según lo que realmente demuestra.</string>
@@ -83,7 +87,11 @@
     <string name="simulated_progress_all_classified">Clasificaste todas las señales.</string>
     <string name="simulated_progress_classified">Señales clasificadas: %1$d de %2$d</string>
     <string name="simulated_progress_choices">Decisiones: %1$d</string>
-    <string name="simulated_progress_solved">Aclaraste el progreso en %1$d decisiones.</string>
+    <plurals name="simulated_progress_solved">
+        <item quantity="one">Aclaraste el progreso en %1$d decisión.</item>
+        <item quantity="many">Aclaraste el progreso en %1$d decisiones.</item>
+        <item quantity="other">Aclaraste el progreso en %1$d decisiones.</item>
+    </plurals>
     <string name="near_occurrence_name">Casi ocurrió</string>
     <string name="near_occurrence_image_description">Una sala de museo tenue de momentos suspendidos, con una taza inclinada y una manzana sobre una mesa, un abrigo vacío con botas y un libro abierto que flota junto a un sillón.</string>
     <string name="near_occurrence_instructions">Hacé avanzar el momento y preservalo justo antes de la consecuencia.</string>
@@ -100,7 +108,11 @@
     <string name="near_occurrence_advance">Avanzar</string>
     <string name="near_occurrence_preserve">Preservar</string>
     <string name="near_occurrence_choices">Decisiones: %1$d</string>
-    <string name="near_occurrence_solved">Preservaste el momento en %1$d decisiones.</string>
+    <plurals name="near_occurrence_solved">
+        <item quantity="one">Preservaste el momento en %1$d decisión.</item>
+        <item quantity="many">Preservaste el momento en %1$d decisiones.</item>
+        <item quantity="other">Preservaste el momento en %1$d decisiones.</item>
+    </plurals>
     <string name="creative_chaos_name">Caos creativo</string>
     <string name="creative_chaos_image_description">Una mesa de trabajo de museo repleta de cuadrículas, bocetos, pantallas con código, diagramas superpuestos y un patrón abstracto que surge de la colisión.</string>
     <string name="creative_chaos_instructions">Seleccioná dos fragmentos disponibles y combinalos para crear algo nuevo.</string>
@@ -136,7 +148,11 @@
     <string name="exhibit_piece_with_status">%1$s — %2$s</string>
     <string name="creative_chaos_combine">Combinar fragmentos</string>
     <string name="creative_chaos_combinations">Combinaciones: %1$d</string>
-    <string name="creative_chaos_solved">Creaste significado en %1$d combinaciones.</string>
+    <plurals name="creative_chaos_solved">
+        <item quantity="one">Creaste significado en %1$d combinación.</item>
+        <item quantity="many">Creaste significado en %1$d combinaciones.</item>
+        <item quantity="other">Creaste significado en %1$d combinaciones.</item>
+    </plurals>
     <string name="finale_title">Visita al museo completa</string>
     <string name="finale_image_description">Una ciudad fantástica de noche, conectada por puentes y dividida en distritos luminosos con cúpulas, torres, jardines, mercados y un laberinto sinuoso.</string>
     <string name="finale_completion_message">Encontraste todos los pequeños misterios. Más allá de la última galería, espera otra ciudad.</string>
@@ -158,7 +174,11 @@
     <string name="exhibit_already_solved">Esta exhibición ya está resuelta.</string>
     <string name="exhibit_locked">Esta exhibición está bloqueada. Completá la anterior primero.</string>
     <string name="inspections">Inspecciones: %1$d</string>
-    <string name="exhibit_solved">Resolviste la exhibición en %1$d inspecciones.</string>
+    <plurals name="exhibit_solved">
+        <item quantity="one">Resolviste la exhibición en %1$d inspección.</item>
+        <item quantity="many">Resolviste la exhibición en %1$d inspecciones.</item>
+        <item quantity="other">Resolviste la exhibición en %1$d inspecciones.</item>
+    </plurals>
     <string name="restart_exhibit">Reiniciar exhibición</string>
     <string name="return_to_entrance">Volver a la entrada del museo</string>
 </resources>

@@ -8,6 +8,7 @@ enum class PenLocation {
 }
 
 enum class PenInspectionFeedback {
+    LOCKED,
     FIRST_LOCATION_EMPTY,
     SAME_LOCATION_STILL_EMPTY,
     PEN_REAPPEARED,

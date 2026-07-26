@@ -8,6 +8,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -59,7 +60,13 @@ fun ReappearingPenContent(
             Text(stringResource(R.string.pen_reappeared_hint))
         }
         if (puzzleState.solved) {
-            Text(stringResource(R.string.exhibit_solved, progress.attempts))
+            Text(
+                pluralStringResource(
+                    R.plurals.exhibit_solved,
+                    progress.attempts,
+                    progress.attempts
+                )
+            )
         }
         ExhibitNavigationActions(
             solved = puzzleState.solved,
@@ -126,6 +133,7 @@ private fun penLocationResource(location: PenLocation): Int = when (location) {
 @StringRes
 private fun penFeedbackResource(feedback: PenInspectionFeedback?): Int = when (feedback) {
     null -> R.string.reappearing_pen_instructions
+    PenInspectionFeedback.LOCKED -> R.string.exhibit_locked
     PenInspectionFeedback.FIRST_LOCATION_EMPTY -> R.string.pen_feedback_first_empty
     PenInspectionFeedback.SAME_LOCATION_STILL_EMPTY -> R.string.pen_feedback_same_empty
     PenInspectionFeedback.PEN_REAPPEARED -> R.string.pen_feedback_reappeared

@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
@@ -79,7 +80,13 @@ fun SimulatedProgressContent(
             onClassify = onClassify
         )
         if (puzzleState.solved) {
-            Text(stringResource(R.string.simulated_progress_solved, progress.attempts))
+            Text(
+                pluralStringResource(
+                    R.plurals.simulated_progress_solved,
+                    progress.attempts,
+                    progress.attempts
+                )
+            )
         }
         ExhibitNavigationActions(
             solved = puzzleState.solved,

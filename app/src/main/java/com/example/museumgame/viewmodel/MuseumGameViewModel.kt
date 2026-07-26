@@ -35,15 +35,15 @@ sealed interface MuseumDestination {
 }
 
 data class MuseumUiState(
-    val destination: MuseumDestination = MuseumDestination.Entrance,
+    val destination: MuseumDestination,
     val exhibits: List<Exhibit>,
     val visitStatuses: List<ExhibitVisitStatus>,
-    val reappearingPen: ReappearingPenUiState = ReappearingPenUiState(),
-    val slightlyWrong: SlightlyWrongUiState = SlightlyWrongUiState(),
-    val workApparent: WorkApparentUiState = WorkApparentUiState(),
-    val simulatedProgress: SimulatedProgressUiState = SimulatedProgressUiState(),
-    val nearOccurrence: NearOccurrenceUiState = NearOccurrenceUiState(),
-    val creativeChaos: CreativeChaosUiState = CreativeChaosUiState()
+    val reappearingPen: ReappearingPenUiState,
+    val slightlyWrong: SlightlyWrongUiState,
+    val workApparent: WorkApparentUiState,
+    val simulatedProgress: SimulatedProgressUiState,
+    val nearOccurrence: NearOccurrenceUiState,
+    val creativeChaos: CreativeChaosUiState
 )
 
 data class ReappearingPenUiState(
@@ -85,19 +85,13 @@ data class CreativeChaosUiState(
 class MuseumGameViewModel : ViewModel() {
 
     private val game = MuseumGame()
-    private val exhibits = game.exhibits
 
-    var uiState by mutableStateOf(
-        MuseumUiState(
-            exhibits = exhibits,
-            visitStatuses = game.visitStatuses()
-        )
-    )
+    var uiState by mutableStateOf(buildDomainSnapshot(MuseumDestination.Entrance))
         private set
 
     fun resumeVisit() {
         game.firstUnfinishedExhibitId()?.let { exhibitId ->
-            uiState = uiState.copy(
+            uiState = buildDomainSnapshot(
                 destination = MuseumDestination.ExhibitDetail(exhibitId)
             )
         }
@@ -105,7 +99,7 @@ class MuseumGameViewModel : ViewModel() {
 
     fun openExhibit(exhibitId: String) {
         if (game.isCompleted(exhibitId) || game.isUnlocked(exhibitId)) {
-            uiState = uiState.copy(
+            uiState = buildDomainSnapshot(
                 destination = MuseumDestination.ExhibitDetail(exhibitId)
             )
         }
@@ -118,7 +112,7 @@ class MuseumGameViewModel : ViewModel() {
         if (!game.isCompleted(exhibitId)) return
 
         val nextExhibitId = game.nextExhibitId(exhibitId)
-        uiState = uiState.copy(
+        uiState = buildDomainSnapshot(
             destination = when {
                 nextExhibitId != null ->
                     MuseumDestination.ExhibitDetail(nextExhibitId)
@@ -132,7 +126,7 @@ class MuseumGameViewModel : ViewModel() {
     }
 
     fun returnToEntrance() {
-        uiState = uiState.copy(destination = MuseumDestination.Entrance)
+        uiState = buildDomainSnapshot(MuseumDestination.Entrance)
     }
 
     fun inspectReappearingPen(location: PenLocation) {
@@ -210,8 +204,7 @@ class MuseumGameViewModel : ViewModel() {
 
     fun restartMuseum() {
         game.restartMuseum()
-        uiState = uiState.copy(destination = MuseumDestination.Entrance)
-        refreshDomainState()
+        uiState = buildDomainSnapshot(MuseumDestination.Entrance)
     }
 
     private fun canActIn(exhibitId: String): Boolean =
@@ -219,38 +212,44 @@ class MuseumGameViewModel : ViewModel() {
             game.isUnlocked(exhibitId)
 
     private fun refreshDomainState() {
-        uiState = uiState.copy(
-            visitStatuses = game.visitStatuses(),
-            reappearingPen = ReappearingPenUiState(
-                progress = game.reappearingPenProgress,
-                puzzleState = game.reappearingPenState,
-                feedback = game.reappearingPenFeedback
-            ),
-            slightlyWrong = SlightlyWrongUiState(
-                progress = game.slightlyWrongProgress,
-                puzzleState = game.slightlyWrongState,
-                feedback = game.slightlyWrongFeedback
-            ),
-            workApparent = WorkApparentUiState(
-                progress = game.workApparentProgress,
-                puzzleState = game.workApparentState,
-                feedback = game.workApparentFeedback
-            ),
-            simulatedProgress = SimulatedProgressUiState(
-                progress = game.simulatedProgressProgress,
-                puzzleState = game.simulatedProgressState,
-                feedback = game.simulatedProgressFeedback
-            ),
-            nearOccurrence = NearOccurrenceUiState(
-                progress = game.nearOccurrenceProgress,
-                puzzleState = game.nearOccurrenceState,
-                feedback = game.nearOccurrenceFeedback
-            ),
-            creativeChaos = CreativeChaosUiState(
-                progress = game.creativeChaosProgress,
-                puzzleState = game.creativeChaosState,
-                feedback = game.creativeChaosFeedback
-            )
-        )
+        uiState = buildDomainSnapshot(uiState.destination)
     }
+
+    private fun buildDomainSnapshot(
+        destination: MuseumDestination
+    ) = MuseumUiState(
+        destination = destination,
+        exhibits = game.exhibits,
+        visitStatuses = game.visitStatuses(),
+        reappearingPen = ReappearingPenUiState(
+            progress = game.reappearingPenProgress,
+            puzzleState = game.reappearingPenState,
+            feedback = game.reappearingPenFeedback
+        ),
+        slightlyWrong = SlightlyWrongUiState(
+            progress = game.slightlyWrongProgress,
+            puzzleState = game.slightlyWrongState,
+            feedback = game.slightlyWrongFeedback
+        ),
+        workApparent = WorkApparentUiState(
+            progress = game.workApparentProgress,
+            puzzleState = game.workApparentState,
+            feedback = game.workApparentFeedback
+        ),
+        simulatedProgress = SimulatedProgressUiState(
+            progress = game.simulatedProgressProgress,
+            puzzleState = game.simulatedProgressState,
+            feedback = game.simulatedProgressFeedback
+        ),
+        nearOccurrence = NearOccurrenceUiState(
+            progress = game.nearOccurrenceProgress,
+            puzzleState = game.nearOccurrenceState,
+            feedback = game.nearOccurrenceFeedback
+        ),
+        creativeChaos = CreativeChaosUiState(
+            progress = game.creativeChaosProgress,
+            puzzleState = game.creativeChaosState,
+            feedback = game.creativeChaosFeedback
+        )
+    )
 }

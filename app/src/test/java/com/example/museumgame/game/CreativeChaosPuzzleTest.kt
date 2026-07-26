@@ -26,6 +26,41 @@ class CreativeChaosPuzzleTest {
     }
 
     @Test
+    fun completionIsDerivedOnlyFromTheCurrentStep() {
+        assertFalse(
+            CreativeChaosState(step = CreativeChaosStep.FORM_PATTERN).solved
+        )
+        assertFalse(
+            CreativeChaosState(step = CreativeChaosStep.ADD_MOTION).solved
+        )
+        assertFalse(
+            CreativeChaosState(step = CreativeChaosStep.ADD_MEANING).solved
+        )
+        assertTrue(
+            CreativeChaosState(step = CreativeChaosStep.COMPLETE).solved
+        )
+    }
+
+    @Test
+    fun completedStateConsumesOnlyTheExplicitGamePieces() {
+        val completedState = CreativeChaosState(
+            step = CreativeChaosStep.COMPLETE
+        )
+
+        assertEquals(
+            setOf(
+                ChaosPiece.GRID,
+                ChaosPiece.SKETCH,
+                ChaosPiece.CODE,
+                ChaosPiece.NOTE,
+                ChaosPiece.PATTERN,
+                ChaosPiece.MOTION
+            ),
+            completedState.consumedPieces
+        )
+    }
+
+    @Test
     fun selectingAThirdPieceIsRejectedWithoutChangingThePair() {
         val puzzle = CreativeChaosPuzzle()
         puzzle.toggle(ChaosPiece.GRID)
