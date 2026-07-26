@@ -51,20 +51,21 @@ fun SlightlyWrongContent(
                 stringResource(slightlyWrongClueResource(requireNotNull(puzzleState.currentClue)))
             }
         )
-        Text(
-            stringResource(slightlyWrongFeedbackResource(feedback)),
+        MuseumFeedbackMessage(
+            text = stringResource(slightlyWrongFeedbackResource(feedback)),
+            solved = puzzleState.solved,
             modifier = Modifier.semantics {
                 liveRegion = LiveRegionMode.Polite
             }
         )
-        Text(stringResource(R.string.inspections, progress.attempts))
+        MuseumSecondaryText(stringResource(R.string.inspections, progress.attempts))
         SlightlyWrongAnswerGrid(
             enabled = !puzzleState.solved,
             onAnswer = onAnswer
         )
         if (puzzleState.solved) {
-            Text(
-                pluralStringResource(
+            MuseumSolvedSummary(
+                text = pluralStringResource(
                     R.plurals.exhibit_solved,
                     progress.attempts,
                     progress.attempts

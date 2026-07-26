@@ -44,13 +44,14 @@ fun ReappearingPenContent(
         illustrationDescriptionResource = resources.illustrationDescriptionResource,
         modifier = modifier
     ) {
-        Text(
-            stringResource(penFeedbackResource(feedback)),
+        MuseumFeedbackMessage(
+            text = stringResource(penFeedbackResource(feedback)),
+            solved = puzzleState.solved,
             modifier = Modifier.semantics {
                 liveRegion = LiveRegionMode.Polite
             }
         )
-        Text(stringResource(R.string.inspections, progress.attempts))
+        MuseumSecondaryText(stringResource(R.string.inspections, progress.attempts))
         PenInspectionGrid(
             enabled = !puzzleState.solved,
             inspectedLocations = puzzleState.inspectedLocations,
@@ -60,8 +61,8 @@ fun ReappearingPenContent(
             Text(stringResource(R.string.pen_reappeared_hint))
         }
         if (puzzleState.solved) {
-            Text(
-                pluralStringResource(
+            MuseumSolvedSummary(
+                text = pluralStringResource(
                     R.plurals.exhibit_solved,
                     progress.attempts,
                     progress.attempts

@@ -1,6 +1,7 @@
 package com.example.museumgame.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -84,6 +86,7 @@ fun MuseumEntranceContent(
             ) {
                 Text(
                     stringResource(R.string.museum_entrance_title),
+                    style = MaterialTheme.typography.displayLarge,
                     modifier = Modifier.semantics { heading() }
                 )
                 EntranceIllustration(
@@ -91,13 +94,15 @@ fun MuseumEntranceContent(
                         .fillMaxWidth()
                         .sizeIn(maxHeight = 420.dp)
                 )
-                EntranceVisitActions(
-                    exhibits = exhibits,
-                    visitStatuses = visitStatuses,
-                    onResumeVisit = onResumeVisit,
-                    onOpenExhibit = onOpenExhibit,
-                    onRestartMuseum = onRestartMuseum
-                )
+                MuseumContentPanel(modifier = Modifier.fillMaxWidth()) {
+                    EntranceVisitActions(
+                        exhibits = exhibits,
+                        visitStatuses = visitStatuses,
+                        onResumeVisit = onResumeVisit,
+                        onOpenExhibit = onOpenExhibit,
+                        onRestartMuseum = onRestartMuseum
+                    )
+                }
             }
         }
     }
@@ -108,7 +113,13 @@ private fun EntranceIllustration(modifier: Modifier = Modifier) {
     Image(
         painter = painterResource(R.drawable.museum_hall),
         contentDescription = stringResource(R.string.museum_entrance_description),
-        modifier = modifier,
+        modifier = modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = MaterialTheme.shapes.medium
+            )
+            .padding(8.dp),
         contentScale = ContentScale.Fit
     )
 }
@@ -128,15 +139,18 @@ private fun EntranceActions(
     ) {
         Text(
             stringResource(R.string.museum_entrance_title),
+            style = MaterialTheme.typography.displayLarge,
             modifier = Modifier.semantics { heading() }
         )
-        EntranceVisitActions(
-            exhibits = exhibits,
-            visitStatuses = visitStatuses,
-            onResumeVisit = onResumeVisit,
-            onOpenExhibit = onOpenExhibit,
-            onRestartMuseum = onRestartMuseum
-        )
+        MuseumContentPanel(modifier = Modifier.fillMaxWidth()) {
+            EntranceVisitActions(
+                exhibits = exhibits,
+                visitStatuses = visitStatuses,
+                onResumeVisit = onResumeVisit,
+                onOpenExhibit = onOpenExhibit,
+                onRestartMuseum = onRestartMuseum
+            )
+        }
     }
 }
 
@@ -152,11 +166,14 @@ private fun EntranceVisitActions(
     val currentStatus = visitStatuses.firstOrNull(ExhibitVisitStatus::current)
 
     if (currentStatus != null) {
-        Button(onClick = onResumeVisit) {
+        Button(
+            onClick = onResumeVisit,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(stringResource(R.string.resume_visit))
         }
     } else {
-        Text(stringResource(R.string.museum_visit_complete))
+        MuseumSolvedSummary(stringResource(R.string.museum_visit_complete))
     }
 
     ExhibitSelector(
@@ -165,7 +182,10 @@ private fun EntranceVisitActions(
         onOpenExhibit = onOpenExhibit
     )
 
-    Button(onClick = onRestartMuseum) {
+    MuseumDestructiveButton(
+        onClick = onRestartMuseum,
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Text(stringResource(R.string.restart_museum))
     }
 }

@@ -55,13 +55,16 @@ fun WorkApparentContent(
                 }
             )
         )
-        Text(
-            stringResource(workApparentFeedbackResource(feedback)),
+        MuseumFeedbackMessage(
+            text = stringResource(workApparentFeedbackResource(feedback)),
+            solved = puzzleState.solved,
             modifier = Modifier.semantics {
                 liveRegion = LiveRegionMode.Polite
             }
         )
-        Text(stringResource(R.string.work_apparent_choices, progress.attempts))
+        MuseumSecondaryText(
+            stringResource(R.string.work_apparent_choices, progress.attempts)
+        )
 
         if (puzzleState.loopTraced) {
             WorkApparentInterruptionControls(
@@ -76,8 +79,8 @@ fun WorkApparentContent(
         }
 
         if (puzzleState.solved) {
-            Text(
-                pluralStringResource(
+            MuseumSolvedSummary(
+                text = pluralStringResource(
                     R.plurals.work_apparent_solved,
                     progress.attempts,
                     progress.attempts

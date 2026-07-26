@@ -3,6 +3,7 @@ package com.example.museumgame.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -56,12 +58,13 @@ internal fun ResponsiveExhibitLayout(
                             .weight(1f)
                     )
                 }
-                Column(
+                MuseumContentPanel(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight()
+                        .fillMaxHeight(),
+                    contentModifier = Modifier
+                        .fillMaxSize()
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     content = interactiveContent
                 )
             }
@@ -81,7 +84,10 @@ internal fun ResponsiveExhibitLayout(
                         .fillMaxWidth()
                         .sizeIn(maxHeight = 420.dp)
                 )
-                interactiveContent()
+                MuseumContentPanel(
+                    modifier = Modifier.fillMaxWidth(),
+                    content = interactiveContent
+                )
             }
         }
     }
@@ -91,6 +97,7 @@ internal fun ResponsiveExhibitLayout(
 private fun ExhibitTitle(@StringRes titleResource: Int) {
     Text(
         stringResource(titleResource),
+        style = MaterialTheme.typography.headlineLarge,
         modifier = Modifier.semantics { heading() }
     )
 }
@@ -104,7 +111,13 @@ private fun ExhibitIllustration(
     Image(
         painter = painterResource(illustrationResource),
         contentDescription = stringResource(descriptionResource),
-        modifier = modifier,
+        modifier = modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = MaterialTheme.shapes.medium
+            )
+            .padding(8.dp),
         contentScale = ContentScale.Fit
     )
 }

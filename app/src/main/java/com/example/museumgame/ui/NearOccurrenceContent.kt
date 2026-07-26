@@ -52,24 +52,27 @@ fun NearOccurrenceContent(
                 R.string.near_occurrence_stage,
                 stringResource(nearOccurrenceStageResource(puzzleState.stage))
             ),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.semantics { heading() }
         )
-        Text(
-            stringResource(nearOccurrenceFeedbackResource(feedback)),
+        MuseumFeedbackMessage(
+            text = stringResource(nearOccurrenceFeedbackResource(feedback)),
+            solved = puzzleState.solved,
             modifier = Modifier.semantics {
                 liveRegion = LiveRegionMode.Polite
             }
         )
-        Text(stringResource(R.string.near_occurrence_choices, progress.attempts))
+        MuseumSecondaryText(
+            stringResource(R.string.near_occurrence_choices, progress.attempts)
+        )
         NearOccurrenceControls(
             enabled = !puzzleState.solved,
             onAdvance = onAdvance,
             onPreserve = onPreserve
         )
         if (puzzleState.solved) {
-            Text(
-                pluralStringResource(
+            MuseumSolvedSummary(
+                text = pluralStringResource(
                     R.plurals.near_occurrence_solved,
                     progress.attempts,
                     progress.attempts

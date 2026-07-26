@@ -2,6 +2,7 @@ package com.example.museumgame.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
@@ -58,30 +59,33 @@ fun SimulatedProgressContent(
                     )
                 )
             },
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.semantics { heading() }
         )
-        Text(
-            stringResource(simulatedProgressFeedbackResource(feedback)),
+        MuseumFeedbackMessage(
+            text = stringResource(simulatedProgressFeedbackResource(feedback)),
+            solved = puzzleState.solved,
             modifier = Modifier.semantics {
                 liveRegion = LiveRegionMode.Polite
             }
         )
-        Text(
-            stringResource(
+        MuseumSecondaryText(
+            text = stringResource(
                 R.string.simulated_progress_classified,
                 puzzleState.classifiedSignals.size,
                 SimulatedProgressSignal.entries.size
             )
         )
-        Text(stringResource(R.string.simulated_progress_choices, progress.attempts))
+        MuseumSecondaryText(
+            stringResource(R.string.simulated_progress_choices, progress.attempts)
+        )
         SimulatedProgressCategoryControls(
             enabled = !puzzleState.solved,
             onClassify = onClassify
         )
         if (puzzleState.solved) {
-            Text(
-                pluralStringResource(
+            MuseumSolvedSummary(
+                text = pluralStringResource(
                     R.plurals.simulated_progress_solved,
                     progress.attempts,
                     progress.attempts
@@ -104,17 +108,26 @@ private fun SimulatedProgressCategoryControls(
     enabled: Boolean,
     onClassify: (ProgressCategory) -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        ProgressCategory.entries.forEach { category ->
-            Button(
-                enabled = enabled,
-                onClick = { onClassify(category) },
-                modifier = Modifier.weight(1f)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ProgressCategory.entries.chunked(2).forEach { rowCategories ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(stringResource(simulatedProgressCategoryResource(category)))
+                rowCategories.forEach { category ->
+                    Button(
+                        enabled = enabled,
+                        onClick = { onClassify(category) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(stringResource(simulatedProgressCategoryResource(category)))
+                    }
+                }
+                if (rowCategories.size == 1) {
+                    androidx.compose.foundation.layout.Spacer(
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }

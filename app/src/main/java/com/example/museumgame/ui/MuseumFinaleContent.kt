@@ -1,5 +1,6 @@
 package com.example.museumgame.ui
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,12 +22,18 @@ fun MuseumFinaleContent(
         illustrationDescriptionResource = R.string.finale_image_description,
         modifier = modifier
     ) {
-        Text(stringResource(R.string.finale_completion_message))
+        MuseumSolvedSummary(stringResource(R.string.finale_completion_message))
         Text(stringResource(R.string.finale_teaser))
-        Button(onClick = onReturnToEntrance) {
+        Button(
+            onClick = onReturnToEntrance,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(stringResource(R.string.return_to_entrance))
         }
-        Button(onClick = onRestartMuseum) {
+        MuseumDestructiveButton(
+            onClick = onRestartMuseum,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(stringResource(R.string.restart_museum))
         }
     }

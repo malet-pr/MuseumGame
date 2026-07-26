@@ -53,19 +53,20 @@ fun CreativeChaosContent(
         Text(stringResource(R.string.creative_chaos_instructions))
         Text(
             text = stringResource(creativeChaosStepResource(puzzleState.step)),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.semantics { heading() }
         )
         Text(stringResource(creativeChaosPromptResource(puzzleState.step)))
         Text(stringResource(creativeChaosGeneratedResource(puzzleState.step)))
-        Text(
-            stringResource(creativeChaosFeedbackResource(feedback)),
+        MuseumFeedbackMessage(
+            text = stringResource(creativeChaosFeedbackResource(feedback)),
+            solved = puzzleState.solved,
             modifier = Modifier.semantics {
                 liveRegion = LiveRegionMode.Polite
             }
         )
-        Text(
-            stringResource(
+        MuseumSecondaryText(
+            text = stringResource(
                 R.string.creative_chaos_combinations,
                 progress.attempts
             )
@@ -82,8 +83,8 @@ fun CreativeChaosContent(
             Text(stringResource(R.string.creative_chaos_combine))
         }
         if (puzzleState.solved) {
-            Text(
-                pluralStringResource(
+            MuseumSolvedSummary(
+                text = pluralStringResource(
                     R.plurals.creative_chaos_solved,
                     progress.attempts,
                     progress.attempts
