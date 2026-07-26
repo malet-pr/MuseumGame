@@ -46,14 +46,14 @@ internal fun exhibitUiResources(exhibitId: String): ExhibitUiResources = when (e
     ExhibitIds.SIMULATED_PROGRESS -> ExhibitUiResources(
         screen = ExhibitUiScreen.SIMULATED_PROGRESS,
         nameResource = R.string.simulated_progress_name,
-        illustrationResource = R.drawable.simulate_progress,
+        illustrationResource = R.drawable.simulated_progress,
         illustrationDescriptionResource = R.string.simulated_progress_image_description
     )
 
     ExhibitIds.NEAR_OCCURRENCE -> ExhibitUiResources(
         screen = ExhibitUiScreen.NEAR_OCCURRENCE,
         nameResource = R.string.near_occurrence_name,
-        illustrationResource = R.drawable.near_occurrence,
+        illustrationResource = R.drawable.almost_happened,
         illustrationDescriptionResource = R.string.near_occurrence_image_description
     )
 

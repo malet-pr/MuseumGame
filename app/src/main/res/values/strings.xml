@@ -85,7 +85,7 @@
     <string name="simulated_progress_choices">Choices: %1$d</string>
     <string name="simulated_progress_solved">You clarified progress in %1$d choices.</string>
     <string name="near_occurrence_name">Near Occurrence</string>
-    <string name="near_occurrence_image_description">A dim museum room of suspended moments, including a tilted cup poised above a still-dry table, an unfinished apple, and an open book hovering near a chair.</string>
+    <string name="near_occurrence_image_description">A dim museum room of suspended moments, with a tipped cup and apple on a table, an empty coat and boots, and an open book hovering beside a chair.</string>
     <string name="near_occurrence_instructions">Move the moment forward, then preserve it exactly before consequence.</string>
     <string name="near_occurrence_stage">Current moment: %1$s</string>
     <string name="near_occurrence_stage_settled">Settled</string>
